@@ -32,7 +32,7 @@ export default function RegisterPage() {
 
   const { control, register, handleSubmit, formState: { errors } } = useForm({
     resolver: zodResolver(registerSchema),
-    defaultValues: { name: '', email: '', password: '', confirmPassword: '' },
+    defaultValues: { name: '', email: '', password: '' },
   })
 
   const { mutate: signupMutation, isPending: isSignupPending } = useMutation({
@@ -52,8 +52,7 @@ export default function RegisterPage() {
   })
 
   const onSubmit = (data) => {
-    const { confirmPassword, ...payload } = data
-    signupMutation({ ...payload, role: 'EMPLOYEE' })
+    signupMutation({ ...data, role: 'EMPLOYEE' })
   }
 
   return (
@@ -102,16 +101,6 @@ export default function RegisterPage() {
           icon={<Lock size={15} />}
         />
 
-        {/* Confirm Password */}
-        <FormInputField
-          name="confirmPassword"
-          control={control}
-          label="Confirm password"
-          type="password"
-          placeholder="Confirm password"
-          errors={errors}
-          icon={<Lock size={15} />}
-        />
 
         <button id="reg-submit" type="submit" disabled={isSignupPending}
           className="w-full h-11 mt-2 flex items-center justify-center gap-2 rounded-btn bg-accent-500 hover:bg-accent-600 disabled:bg-accent-500/60 text-white text-sm font-semibold tracking-[-0.01em] transition-colors cursor-pointer disabled:cursor-not-allowed">

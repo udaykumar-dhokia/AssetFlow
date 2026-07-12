@@ -4,19 +4,6 @@ import { Eye, EyeOff } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
-/**
- * Reusable FormInputField that integrates with react-hook-form.
- * 
- * @param {string} name - Field name for react-hook-form
- * @param {object} control - Control object from useForm()
- * @param {string} label - Label text
- * @param {string} type - Input type (text, password, email, etc.)
- * @param {string} placeholder - Input placeholder
- * @param {object} errors - Errors object from useFormState() or useForm()
- * @param {object} rules - Validation rules for react-hook-form
- * @param {React.ReactNode} icon - Optional icon to render inside the left of the input
- * @param {React.ReactNode} rightElement - Optional element to render on the right
- */
 export default function FormInputField({
   name,
   control,
@@ -27,7 +14,7 @@ export default function FormInputField({
   rules,
   icon,
   rightElement,
-  size = 'h-11',
+  size = 'h-12',
   ...rest
 }) {
   const errorMessage = errors?.[name]?.message
