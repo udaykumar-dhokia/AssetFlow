@@ -18,7 +18,7 @@ export default function ReportSkeleton({ variant = 'chart' }) {
             className={`bg-card border border-border rounded-xl p-4 space-y-3 ${i === 2 ? 'col-span-2 sm:col-span-1' : ''}`}
           >
             <Skeleton className="h-3 w-28" />
-            <Skeleton className="h-9 w-14" />
+            <Skeleton className="h-9 w-14" /> 
             <Skeleton className="h-3 w-36" />
           </div>
         ))}

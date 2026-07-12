@@ -114,6 +114,7 @@ export default function ReportsPage() {
           data={utilization.data}
           isLoading={utilization.isLoading}
           error={utilization.error}
+          onRetry={utilization.refetch}
         />
       ),
     },
@@ -131,6 +132,7 @@ export default function ReportsPage() {
           data={maintenance.data}
           isLoading={maintenance.isLoading}
           error={maintenance.error}
+          onRetry={maintenance.refetch}
         />
       ),
     }] : []),
@@ -147,6 +149,7 @@ export default function ReportsPage() {
           data={department.data}
           isLoading={department.isLoading}
           error={department.error}
+          onRetry={department.refetch}
         />
       ),
     },
@@ -164,6 +167,7 @@ export default function ReportsPage() {
           data={heatmap.data}
           isLoading={heatmap.isLoading}
           error={heatmap.error}
+          onRetry={heatmap.refetch}
         />
       ),
     }] : []),

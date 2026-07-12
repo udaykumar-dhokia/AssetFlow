@@ -11,8 +11,9 @@ import {
   ResponsiveContainer,
   Cell,
 } from 'recharts'
-import { AlertTriangle, Clock, Wrench, ShieldAlert } from 'lucide-react'
+import { AlertCircle, Clock, Wrench, ShieldAlert } from 'lucide-react'
 import { format, differenceInYears } from 'date-fns'
+import { Skeleton } from '@/components/ui/skeleton'
 import ReportSkeleton from './ReportSkeleton'
 
 // ── Custom tooltip ─────────────────────────────────────────────
@@ -45,19 +46,43 @@ function EmptyState({ message }) {
   )
 }
 
-export default function MaintenanceChart({ data, isLoading, error }) {
+export default function MaintenanceChart({ data, isLoading, error, onRetry }) {
   if (isLoading) return (
     <div className="space-y-8">
       <ReportSkeleton variant="kpi" />
-      <ReportSkeleton variant="chart" />
-      <ReportSkeleton variant="table" />
+      <div className="bg-card border border-border rounded-xl p-6">
+        <Skeleton className="h-4 w-56 mb-1" />
+        <Skeleton className="h-3 w-80 mb-6" />
+        <ReportSkeleton variant="chart" />
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-card border border-border rounded-xl p-5">
+          <Skeleton className="h-4 w-44 mb-4" />
+          <ReportSkeleton variant="table" />
+        </div>
+        <div className="bg-card border border-border rounded-xl p-5">
+          <Skeleton className="h-4 w-36 mb-4" />
+          <ReportSkeleton variant="table" />
+        </div>
+      </div>
     </div>
   )
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 gap-2 text-muted-foreground">
-        <p className="text-sm text-danger-600">Failed to load maintenance analytics. (Admin / Asset Manager access required)</p>
+      <div className="flex flex-col items-center justify-center py-20 gap-3">
+        <div className="w-12 h-12 rounded-full bg-red-50 dark:bg-red-950/30 flex items-center justify-center">
+          <AlertCircle size={22} className="text-danger-600" />
+        </div>
+        <div className="text-center">
+          <p className="text-sm font-medium text-foreground">Failed to load maintenance analytics</p>
+          <p className="text-xs text-muted-foreground mt-1">{error?.message ?? 'An unexpected error occurred.'}</p>
+        </div>
+        {onRetry && (
+          <button onClick={onRetry} className="text-xs text-[var(--text-accent)] hover:underline mt-1">
+            Try again
+          </button>
+        )}
       </div>
     )
   }

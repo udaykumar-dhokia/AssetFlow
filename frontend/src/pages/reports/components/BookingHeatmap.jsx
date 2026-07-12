@@ -3,9 +3,10 @@
 // API: { heatmap: [[...24 hours], ...7 days] }
 // Row index 0 = Sunday, column index 0 = Midnight (00:00)
 
-import { useState } from 'react'
+
 import ReportSkeleton from './ReportSkeleton'
-import { CalendarDays } from 'lucide-react'
+import { Skeleton } from '@/components/ui/skeleton'
+import { CalendarDays, AlertCircle } from 'lucide-react'
 
 const DAY_LABELS   = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const HOUR_LABELS  = Array.from({ length: 24 }, (_, i) => {
@@ -36,14 +37,40 @@ function EmptyState() {
   )
 }
 
-export default function BookingHeatmap({ data, isLoading, error }) {
-  const [tooltip, setTooltip] = useState(null) // { day, hour, value, x, y }
+export default function BookingHeatmap({ data, isLoading, error, onRetry }) {
+  if (isLoading) {
+    return (
+      <div className="space-y-8">
+        <ReportSkeleton variant="kpi" />
+        <div className="bg-card border border-border rounded-xl p-6">
+          <Skeleton className="h-4 w-52 mb-1" />
+          <Skeleton className="h-3 w-80 mb-6" />
+          <ReportSkeleton variant="heatmap" />
+        </div>
+        <div className="bg-card border border-border rounded-xl p-6">
+          <Skeleton className="h-4 w-44 mb-1" />
+          <Skeleton className="h-3 w-64 mb-4" />
+          <Skeleton className="h-20 w-full rounded" />
+        </div>
+      </div>
+    )
+  }
 
-  if (isLoading) return <ReportSkeleton variant="heatmap" />
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 gap-2">
-        <p className="text-sm text-danger-600">Failed to load booking heatmap. (Admin / Asset Manager access required)</p>
+      <div className="flex flex-col items-center justify-center py-20 gap-3">
+        <div className="w-12 h-12 rounded-full bg-red-50 dark:bg-red-950/30 flex items-center justify-center">
+          <AlertCircle size={22} className="text-danger-600" />
+        </div>
+        <div className="text-center">
+          <p className="text-sm font-medium text-foreground">Failed to load booking heatmap</p>
+          <p className="text-xs text-muted-foreground mt-1">{error?.message ?? 'An unexpected error occurred.'}</p>
+        </div>
+        {onRetry && (
+          <button onClick={onRetry} className="text-xs text-[var(--text-accent)] hover:underline mt-1">
+            Try again
+          </button>
+        )}
       </div>
     )
   }

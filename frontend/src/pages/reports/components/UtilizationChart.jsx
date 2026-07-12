@@ -11,7 +11,8 @@ import {
   ResponsiveContainer,
   Cell,
 } from 'recharts'
-import { TrendingUp, TrendingDown, Share2, Lock } from 'lucide-react'
+import { TrendingUp, TrendingDown, Share2, Lock, AlertCircle } from 'lucide-react'
+import { Skeleton } from '@/components/ui/skeleton'
 import ReportSkeleton from './ReportSkeleton'
 
 // ── Custom tooltip ─────────────────────────────────────────────
@@ -68,12 +69,45 @@ function AssetCard({ asset, rank, colorClass }) {
   )
 }
 
-export default function UtilizationChart({ data, isLoading, error }) {
-  if (isLoading) return <ReportSkeleton variant="chart" />
+export default function UtilizationChart({ data, isLoading, error, onRetry }) {
+  if (isLoading) {
+    return (
+      <div className="space-y-8">
+        <ReportSkeleton variant="kpi" />
+        <div className="bg-card border border-border rounded-xl p-6">
+          <Skeleton className="h-4 w-48 mb-1" />
+          <Skeleton className="h-3 w-72 mb-6" />
+          <ReportSkeleton variant="chart" />
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="bg-card border border-border rounded-xl p-5">
+            <Skeleton className="h-4 w-32 mb-4" />
+            <ReportSkeleton variant="table" />
+          </div>
+          <div className="bg-card border border-border rounded-xl p-5">
+            <Skeleton className="h-4 w-24 mb-4" />
+            <ReportSkeleton variant="table" />
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 gap-2 text-muted-foreground">
-        <p className="text-sm text-danger-600">Failed to load utilization data.</p>
+      <div className="flex flex-col items-center justify-center py-20 gap-3">
+        <div className="w-12 h-12 rounded-full bg-red-50 dark:bg-red-950/30 flex items-center justify-center">
+          <AlertCircle size={22} className="text-danger-600" />
+        </div>
+        <div className="text-center">
+          <p className="text-sm font-medium text-foreground">Failed to load utilization data</p>
+          <p className="text-xs text-muted-foreground mt-1">{error?.message ?? 'An unexpected error occurred.'}</p>
+        </div>
+        {onRetry && (
+          <button onClick={onRetry} className="text-xs text-[var(--text-accent)] hover:underline mt-1">
+            Try again
+          </button>
+        )}
       </div>
     )
   }

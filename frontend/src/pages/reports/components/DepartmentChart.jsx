@@ -9,7 +9,8 @@ import {
   ResponsiveContainer,
   Legend,
 } from 'recharts'
-import { Building2 } from 'lucide-react'
+import { Building2, AlertCircle } from 'lucide-react'
+import { Skeleton } from '@/components/ui/skeleton'
 import ReportSkeleton from './ReportSkeleton'
 
 // ── Palette (sufficient for up to 12 departments) ─────────────
@@ -60,18 +61,53 @@ function EmptyState() {
   )
 }
 
-export default function DepartmentChart({ data, isLoading, error }) {
+export default function DepartmentChart({ data, isLoading, error, onRetry }) {
   if (isLoading) return (
     <div className="space-y-8">
       <ReportSkeleton variant="kpi" />
-      <ReportSkeleton variant="chart" />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-card border border-border rounded-xl p-6">
+          <Skeleton className="h-4 w-36 mb-1" />
+          <Skeleton className="h-3 w-48 mb-4" />
+          <div className="flex items-center justify-center h-64">
+            <Skeleton className="w-44 h-44 rounded-full" />
+          </div>
+        </div>
+        <div className="bg-card border border-border rounded-xl p-6">
+          <Skeleton className="h-4 w-44 mb-1" />
+          <Skeleton className="h-3 w-36 mb-4" />
+          <div className="space-y-3">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="rounded-lg border border-border p-3 space-y-2">
+                <div className="flex items-center gap-2">
+                  <Skeleton className="w-2.5 h-2.5 rounded-full" />
+                  <Skeleton className="h-3 flex-1" />
+                  <Skeleton className="h-3 w-8" />
+                </div>
+                <Skeleton className="h-1.5 rounded-full" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   )
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 gap-2">
-        <p className="text-sm text-danger-600">Failed to load department summary.</p>
+      <div className="flex flex-col items-center justify-center py-20 gap-3">
+        <div className="w-12 h-12 rounded-full bg-red-50 dark:bg-red-950/30 flex items-center justify-center">
+          <AlertCircle size={22} className="text-danger-600" />
+        </div>
+        <div className="text-center">
+          <p className="text-sm font-medium text-foreground">Failed to load department summary</p>
+          <p className="text-xs text-muted-foreground mt-1">{error?.message ?? 'An unexpected error occurred.'}</p>
+        </div>
+        {onRetry && (
+          <button onClick={onRetry} className="text-xs text-[var(--text-accent)] hover:underline mt-1">
+            Try again
+          </button>
+        )}
       </div>
     )
   }
@@ -102,10 +138,10 @@ export default function DepartmentChart({ data, isLoading, error }) {
         <div className="col-span-2 sm:col-span-1 bg-card border border-border rounded-xl p-4">
           <p className="text-xs text-muted-foreground mb-1">Largest Department</p>
           <p className="text-lg font-bold text-foreground truncate">
-            {departments.sort((a, b) => b.totalActiveAssets - a.totalActiveAssets)[0]?.departmentName ?? '—'}
+            {[...departments].sort((a, b) => b.totalActiveAssets - a.totalActiveAssets)[0]?.departmentName ?? '—'}
           </p>
           <p className="text-xs text-[var(--text-accent)] mt-1 font-medium">
-            {departments[0]?.totalActiveAssets ?? 0} assets
+            {[...departments].sort((a, b) => b.totalActiveAssets - a.totalActiveAssets)[0]?.totalActiveAssets ?? 0} assets
           </p>
         </div>
       </div>
