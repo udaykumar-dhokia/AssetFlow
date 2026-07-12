@@ -1,4 +1,9 @@
 dotenv
 sqlalchemy
 openai
-psycopg2
+psycopg2-binary
+fastapi
+uvicorn
+pydantic
+requests
+httpx
