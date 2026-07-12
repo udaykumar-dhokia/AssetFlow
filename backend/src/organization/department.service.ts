@@ -11,6 +11,8 @@ import { successResponse } from '../../utils/response';
 import { CreateDepartmentDto } from './dto/create-department.dto';
 import { UpdateDepartmentDto } from './dto/update-department.dto';
 
+import { ActivityLogService } from '../activity-log/activity-log.service';
+
 const log = createLogger('DepartmentService');
 
 const DEPARTMENT_SELECT = {
@@ -27,9 +29,12 @@ const DEPARTMENT_SELECT = {
 
 @Injectable()
 export class DepartmentService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly activityLogService: ActivityLogService,
+  ) {}
 
-  async create(dto: CreateDepartmentDto) {
+  async create(dto: CreateDepartmentDto, userId: string) {
     const existing = await this.prisma.department.findUnique({
       where: { name: dto.name },
     });
@@ -61,6 +66,15 @@ export class DepartmentService {
     });
 
     log.info('Department created', { id: department.id, name: department.name });
+    
+    await this.activityLogService.logAction(
+      userId,
+      'DEPARTMENT_CREATED',
+      'Department',
+      department.id,
+      { new_data: department }
+    );
+
     return successResponse(department, 'Department created', 'CREATED');
   }
 
@@ -92,7 +106,7 @@ export class DepartmentService {
     return successResponse(department, 'Department fetched');
   }
 
-  async update(id: string, dto: UpdateDepartmentDto) {
+  async update(id: string, dto: UpdateDepartmentDto, userId: string) {
     const department = await this.prisma.department.findUnique({ where: { id } });
     if (!department) throw new NotFoundException('Department not found');
 
@@ -132,10 +146,19 @@ export class DepartmentService {
     });
 
     log.info('Department updated', { id });
+    
+    await this.activityLogService.logAction(
+      userId,
+      'DEPARTMENT_UPDATED',
+      'Department',
+      id,
+      { old_data: department, new_data: updated }
+    );
+
     return successResponse(updated, 'Department updated');
   }
 
-  async deactivate(id: string) {
+  async deactivate(id: string, userId: string) {
     const department = await this.prisma.department.findUnique({ where: { id } });
     if (!department) throw new NotFoundException('Department not found');
     if (department.status === Status.INACTIVE) {
@@ -149,6 +172,15 @@ export class DepartmentService {
     });
 
     log.info('Department deactivated', { id });
+    
+    await this.activityLogService.logAction(
+      userId,
+      'DEPARTMENT_DEACTIVATED',
+      'Department',
+      id,
+      { old_status: department.status, new_status: Status.INACTIVE }
+    );
+
     return successResponse(updated, 'Department deactivated');
   }
 }

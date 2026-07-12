@@ -3,6 +3,8 @@ import { PrismaService } from '../shared/prisma.service';
 import { CreateAllocationDto } from './dto/create-allocation.dto';
 import { ReturnAssetDto } from './dto/return-asset.dto';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { ActivityLogService } from '../activity-log/activity-log.service';
+import { NotificationService } from '../notification/notification.service';
 
 /**
  * AllocationService handles allocation, transfer, and return logic for assets.
@@ -12,7 +14,11 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 export class AllocationService {
   private readonly logger = new Logger(AllocationService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly activityLogService: ActivityLogService,
+    private readonly notificationService: NotificationService,
+  ) {}
 
   /**
    * Allocates an asset to a user or department.
@@ -20,7 +26,7 @@ export class AllocationService {
    * @returns The created allocation record.
    * @throws ConflictException if the asset is already allocated or under transfer.
    */
-  async allocate(dto: CreateAllocationDto) {
+  async allocate(dto: CreateAllocationDto, currentUserId: string) {
     const existingActive = await this.prisma.assetAllocation.findFirst({
       where: {
         assetId: dto.assetId,
@@ -51,6 +57,25 @@ export class AllocationService {
       where: { id: dto.assetId },
       data: { status: 'ALLOCATED' },
     });
+    
+    await this.activityLogService.logAction(
+      currentUserId,
+      'ASSET_ALLOCATED',
+      'AssetAllocation',
+      allocation.id,
+      { new_data: allocation }
+    );
+    
+    if (dto.allocatedToUserId) {
+      await this.notificationService.create(
+        dto.allocatedToUserId,
+        'ASSET_ALLOCATED',
+        'Asset Assigned',
+        'A new asset has been assigned to you.',
+        'AssetAllocation',
+        allocation.id
+      );
+    }
 
     return allocation;
   }
@@ -78,6 +103,17 @@ export class AllocationService {
         transferReqByUserId: currentUserId,
       },
     });
+    
+    await this.activityLogService.logAction(
+      currentUserId,
+      'TRANSFER_REQUESTED',
+      'AssetAllocation',
+      updated.id,
+      { old_data: activeAllocation, new_data: updated }
+    );
+    
+    // In a real app we might want to notify all ASSET_MANAGERs here.
+    // For simplicity, we just log it.
 
     return updated;
   }
@@ -89,7 +125,7 @@ export class AllocationService {
    * @returns The new allocation record.
    * @throws BadRequestException if the allocation is not in a transferable state.
    */
-  async approveTransfer(allocationId: string) {
+  async approveTransfer(allocationId: string, currentUserId: string) {
     const allocation = await this.prisma.assetAllocation.findUnique({
       where: { id: allocationId },
     });
@@ -112,6 +148,25 @@ export class AllocationService {
         allocatedToUserId: allocation.transferReqByUserId,
       },
     });
+    
+    await this.activityLogService.logAction(
+      currentUserId,
+      'TRANSFER_APPROVED',
+      'AssetAllocation',
+      newAllocation.id,
+      { old_allocation_id: allocation.id, new_data: newAllocation }
+    );
+    
+    if (allocation.transferReqByUserId) {
+      await this.notificationService.create(
+        allocation.transferReqByUserId,
+        'TRANSFER_APPROVED',
+        'Transfer Approved',
+        'Your request for asset transfer has been approved.',
+        'AssetAllocation',
+        newAllocation.id
+      );
+    }
 
     return newAllocation;
   }
@@ -123,7 +178,7 @@ export class AllocationService {
    * @returns The updated allocation record.
    * @throws BadRequestException if the allocation is already returned.
    */
-  async returnAsset(allocationId: string, dto: ReturnAssetDto) {
+  async returnAsset(allocationId: string, dto: ReturnAssetDto, currentUserId: string) {
     const allocation = await this.prisma.assetAllocation.findUnique({
       where: { id: allocationId },
     });
@@ -145,6 +200,25 @@ export class AllocationService {
       where: { id: allocation.assetId },
       data: { status: 'AVAILABLE' },
     });
+    
+    await this.activityLogService.logAction(
+      currentUserId,
+      'ASSET_RETURNED',
+      'AssetAllocation',
+      updated.id,
+      { old_data: allocation, new_data: updated }
+    );
+    
+    if (allocation.allocatedToUserId && allocation.allocatedToUserId !== currentUserId) {
+      await this.notificationService.create(
+        allocation.allocatedToUserId,
+        'ASSET_RETURNED',
+        'Asset Returned',
+        'An asset previously assigned to you has been successfully returned.',
+        'AssetAllocation',
+        updated.id
+      );
+    }
 
     return updated;
   }
@@ -170,15 +244,14 @@ export class AllocationService {
 
     for (const alloc of overdueAllocations) {
       if (alloc.allocatedToUserId) {
-        await this.prisma.notification.create({
-          data: {
-            userId: alloc.allocatedToUserId,
-            type: 'OVERDUE_ASSET',
-            message: `Your allocation for asset ${alloc.asset.name} is overdue. Please return it or request an extension.`,
-            relatedEntityType: 'ASSET_ALLOCATION',
-            relatedEntityId: alloc.id,
-          },
-        });
+        await this.notificationService.create(
+          alloc.allocatedToUserId,
+          'OVERDUE_ASSET',
+          'Asset Overdue',
+          `Your allocation for asset ${alloc.asset.name} is overdue. Please return it or request an extension.`,
+          'AssetAllocation',
+          alloc.id
+        );
       }
     }
     this.logger.log(`Flagged ${overdueAllocations.length} overdue allocations.`);

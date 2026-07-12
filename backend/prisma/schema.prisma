@@ -287,6 +287,8 @@ model ActivityLog {
   entityType String   @map("entity_type")
   entityId   String   @map("entity_id")
   details    Json?
+  ipAddress  String?  @map("ip_address")
+  userAgent  String?  @map("user_agent")
   createdAt  DateTime @default(now()) @map("created_at")
 
   user User @relation(fields: [userId], references: [id])
@@ -298,6 +300,7 @@ model Notification {
   id                String   @id @default(uuid())
   userId            String   @map("user_id")
   type              String
+  title             String
   message           String
   isRead            Boolean  @default(false) @map("is_read")
   relatedEntityType String?  @map("related_entity_type")

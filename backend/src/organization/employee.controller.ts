@@ -5,11 +5,13 @@ import {
   Param,
   Patch,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Role } from '@prisma/client';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { AuthRequest } from '../../utils/jwt.middleware';
 import { EmployeeService } from './employee.service';
 import { AssignDepartmentDto } from './dto/assign-department.dto';
 import { PromoteRoleDto } from './dto/promote-role.dto';
@@ -39,21 +41,21 @@ export class EmployeeController {
   @Patch(':id/department')
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Assign employee to a department' })
-  assignDepartment(@Param('id') id: string, @Body() dto: AssignDepartmentDto) {
-    return this.employeeService.assignDepartment(id, dto);
+  assignDepartment(@Param('id') id: string, @Body() dto: AssignDepartmentDto, @Req() req: AuthRequest) {
+    return this.employeeService.assignDepartment(id, dto, req.user.sub);
   }
 
   @Patch(':id/role')
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Promote or change employee role (ADMIN only)' })
-  promoteRole(@Param('id') id: string, @Body() dto: PromoteRoleDto) {
-    return this.employeeService.promoteRole(id, dto);
+  promoteRole(@Param('id') id: string, @Body() dto: PromoteRoleDto, @Req() req: AuthRequest) {
+    return this.employeeService.promoteRole(id, dto, req.user.sub);
   }
 
   @Patch(':id/status')
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Activate or deactivate an employee account' })
-  updateStatus(@Param('id') id: string, @Body() dto: UpdateStatusDto) {
-    return this.employeeService.updateStatus(id, dto);
+  updateStatus(@Param('id') id: string, @Body() dto: UpdateStatusDto, @Req() req: AuthRequest) {
+    return this.employeeService.updateStatus(id, dto, req.user.sub);
   }
 }
