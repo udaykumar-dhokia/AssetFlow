@@ -43,7 +43,22 @@ export default function Header({ title = '' }) {
       </div>
 
       {/* Right controls */}
- 
+      {/* add darkmode and notification option  */}
+    <button
+          onClick={toggleTheme}
+          title={isDark ? 'Light mode' : 'Dark mode'}
+          className={cn(
+            'h-7 w-7 flex items-center justify-center rounded-[5px]',
+            'text-[var(--text-tertiary)] hover:text-[var(--text-primary)]',
+            'hover:bg-[var(--bg-subtle)]',
+            'transition-colors duration-100',
+          )}
+        >
+          {isDark
+            ? <Sun size={14} strokeWidth={1.75} />
+            : <Moon size={14} strokeWidth={1.75} />
+          }
+        </button>
     </header>
   )
 }
