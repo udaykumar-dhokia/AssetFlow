@@ -11,6 +11,9 @@ import { AssignDepartmentDto } from './dto/assign-department.dto';
 import { PromoteRoleDto } from './dto/promote-role.dto';
 import { UpdateStatusDto } from './dto/update-status.dto';
 
+import { ActivityLogService } from '../activity-log/activity-log.service';
+import { NotificationService } from '../notification/notification.service';
+
 const log = createLogger('EmployeeService');
 
 const EMPLOYEE_SELECT = {
@@ -26,7 +29,11 @@ const EMPLOYEE_SELECT = {
 
 @Injectable()
 export class EmployeeService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly activityLogService: ActivityLogService,
+    private readonly notificationService: NotificationService,
+  ) {}
 
   async findAll() {
     const employees = await this.prisma.user.findMany({
@@ -45,7 +52,7 @@ export class EmployeeService {
     return successResponse(employee, 'Employee fetched');
   }
 
-  async assignDepartment(id: string, dto: AssignDepartmentDto) {
+  async assignDepartment(id: string, dto: AssignDepartmentDto, adminId: string) {
     const employee = await this.prisma.user.findUnique({ where: { id } });
     if (!employee) throw new NotFoundException('Employee not found');
 
@@ -61,10 +68,28 @@ export class EmployeeService {
     });
 
     log.info('Employee department assigned', { userId: id, departmentId: dto.departmentId });
+    
+    await this.activityLogService.logAction(
+      adminId,
+      'EMPLOYEE_UPDATED',
+      'User',
+      id,
+      { old_department_id: employee.departmentId, new_department_id: dto.departmentId }
+    );
+    
+    await this.notificationService.create(
+      id,
+      'EMPLOYEE_UPDATED',
+      'Department Changed',
+      `You have been assigned to the ${department.name} department.`,
+      'Department',
+      department.id
+    );
+
     return successResponse(updated, 'Department assigned to employee');
   }
 
-  async promoteRole(id: string, dto: PromoteRoleDto) {
+  async promoteRole(id: string, dto: PromoteRoleDto, adminId: string) {
     const employee = await this.prisma.user.findUnique({ where: { id } });
     if (!employee) throw new NotFoundException('Employee not found');
 
@@ -85,10 +110,28 @@ export class EmployeeService {
     });
 
     log.info('Employee role updated', { userId: id, from: employee.role, to: dto.role });
+    
+    await this.activityLogService.logAction(
+      adminId,
+      'EMPLOYEE_UPDATED',
+      'User',
+      id,
+      { old_role: employee.role, new_role: dto.role }
+    );
+    
+    await this.notificationService.create(
+      id,
+      'EMPLOYEE_UPDATED',
+      'Role Updated',
+      `Your role has been changed to ${dto.role}.`,
+      'User',
+      id
+    );
+
     return successResponse(updated, `Employee promoted to ${dto.role}`);
   }
 
-  async updateStatus(id: string, dto: UpdateStatusDto) {
+  async updateStatus(id: string, dto: UpdateStatusDto, adminId: string) {
     const employee = await this.prisma.user.findUnique({ where: { id } });
     if (!employee) throw new NotFoundException('Employee not found');
 
@@ -103,6 +146,17 @@ export class EmployeeService {
     });
 
     log.info('Employee status updated', { userId: id, status: dto.status });
+    
+    await this.activityLogService.logAction(
+      adminId,
+      'EMPLOYEE_UPDATED',
+      'User',
+      id,
+      { old_status: employee.status, new_status: dto.status }
+    );
+    
+    // Not notifying them of status change since inactive users might not be able to log in anyway
+    
     return successResponse(updated, `Employee ${dto.status.toLowerCase()}`);
   }
 }

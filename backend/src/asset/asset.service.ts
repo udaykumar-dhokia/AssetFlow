@@ -3,6 +3,7 @@ import { PrismaService } from '../shared/prisma.service';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { SearchAssetDto } from './dto/search-asset.dto';
 import { Prisma } from '@prisma/client';
+import { ActivityLogService } from '../activity-log/activity-log.service';
 
 /**
  * AssetService provides CRUD and search operations for assets. It also
@@ -10,7 +11,10 @@ import { Prisma } from '@prisma/client';
  */
 @Injectable()
 export class AssetService implements OnModuleInit {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly activityLogService: ActivityLogService,
+  ) {}
 
   async onModuleInit() {
     await this.prisma.$executeRawUnsafe(
@@ -23,12 +27,12 @@ export class AssetService implements OnModuleInit {
    * @param dto - Asset creation DTO.
    * @returns The created asset including its category.
    */
-  async create(dto: CreateAssetDto) {
+  async create(dto: CreateAssetDto, userId: string) {
     const result = await this.prisma.$queryRaw<{ nextval: bigint }[]>`SELECT nextval('asset_tag_seq')`;
     const nextVal = Number(result[0].nextval);
     const assetTag = `AF-${nextVal.toString().padStart(4, '0')}`;
 
-    return this.prisma.asset.create({
+    const asset = await this.prisma.asset.create({
       data: {
         ...dto,
         assetTag,
@@ -38,6 +42,16 @@ export class AssetService implements OnModuleInit {
         category: true,
       }
     });
+    
+    await this.activityLogService.logAction(
+      userId,
+      'ASSET_CREATED',
+      'Asset',
+      asset.id,
+      { new_data: asset }
+    );
+    
+    return asset;
   }
 
   /**

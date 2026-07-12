@@ -11,6 +11,8 @@ import { AllocationModule } from './allocation/allocation.module';
 import { BookingModule } from './booking/booking.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { MaintenanceModule } from './maintenance/maintenance.module';
+import { NotificationModule } from './notification/notification.module';
+import { ActivityLogModule } from './activity-log/activity-log.module';
 import { AuditModule } from './audit/audit.module';
 import { ReportModule } from './report/report.module';
 
@@ -25,6 +27,8 @@ import { ReportModule } from './report/report.module';
     BookingModule,
     ScheduleModule.forRoot(),
     MaintenanceModule,
+    NotificationModule,
+    ActivityLogModule,
     AuditModule,
     ReportModule,
   ],

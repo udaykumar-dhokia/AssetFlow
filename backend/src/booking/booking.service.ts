@@ -9,11 +9,18 @@ import { Cron, CronExpression } from '@nestjs/schedule';
  * processing of resource bookings. It also sends reminders and handles
  * scheduled status updates.
  */
+import { ActivityLogService } from '../activity-log/activity-log.service';
+import { NotificationService } from '../notification/notification.service';
+
 @Injectable()
 export class BookingService {
   private readonly logger = new Logger(BookingService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly activityLogService: ActivityLogService,
+    private readonly notificationService: NotificationService,
+  ) {}
 
   /**
    * Validates that a proposed booking time window is valid and does not
@@ -78,7 +85,7 @@ export class BookingService {
 
     await this.validateTimes(start, end, dto.assetId);
 
-    return this.prisma.resourceBooking.create({
+    const booking = await this.prisma.resourceBooking.create({
       data: {
         userId,
         assetId: dto.assetId,
@@ -87,6 +94,25 @@ export class BookingService {
         status: 'UPCOMING',
       },
     });
+
+    await this.activityLogService.logAction(
+      userId,
+      'BOOKING_CREATED',
+      'ResourceBooking',
+      booking.id,
+      { new_data: booking }
+    );
+    
+    await this.notificationService.create(
+      userId,
+      'BOOKING_CREATED',
+      'Booking Confirmed',
+      `Your booking for ${asset.name} from ${start.toLocaleString()} to ${end.toLocaleString()} is confirmed.`,
+      'ResourceBooking',
+      booking.id
+    );
+
+    return booking;
   }
 
   /**
@@ -136,10 +162,41 @@ export class BookingService {
       throw new BadRequestException(`Cannot cancel a booking that is ${booking.status}.`);
     }
 
-    return this.prisma.resourceBooking.update({
+    const updated = await this.prisma.resourceBooking.update({
       where: { id: bookingId },
       data: { status: 'CANCELLED' },
     });
+
+    await this.activityLogService.logAction(
+      userId,
+      'BOOKING_CANCELLED',
+      'ResourceBooking',
+      updated.id,
+      { old_data: booking, new_data: updated }
+    );
+    
+    // Only notify if cancelled by someone else (e.g. ADMIN) or optionally always
+    if (booking.userId !== userId) {
+      await this.notificationService.create(
+        booking.userId,
+        'BOOKING_CANCELLED',
+        'Booking Cancelled',
+        `Your booking for this asset has been cancelled by an administrator.`,
+        'ResourceBooking',
+        updated.id
+      );
+    } else {
+      await this.notificationService.create(
+        userId,
+        'BOOKING_CANCELLED',
+        'Booking Cancelled',
+        `You successfully cancelled your booking.`,
+        'ResourceBooking',
+        updated.id
+      );
+    }
+
+    return updated;
   }
 
   /**
@@ -168,10 +225,20 @@ export class BookingService {
 
     await this.validateTimes(start, end, booking.assetId, booking.id);
 
-    return this.prisma.resourceBooking.update({
+    const updated = await this.prisma.resourceBooking.update({
       where: { id: bookingId },
       data: { startTime: start, endTime: end },
     });
+    
+    await this.activityLogService.logAction(
+      userId,
+      'BOOKING_UPDATED',
+      'ResourceBooking',
+      updated.id,
+      { old_data: booking, new_data: updated }
+    );
+    
+    return updated;
   }
 
   /**
@@ -234,15 +301,14 @@ export class BookingService {
       });
 
       if (!existing) {
-        await this.prisma.notification.create({
-          data: {
-            userId: booking.userId,
-            type: 'BOOKING_REMINDER',
-            message: `Reminder: Your booking for ${booking.asset.name} starts at ${booking.startTime.toLocaleTimeString()}.`,
-            relatedEntityType: 'RESOURCE_BOOKING',
-            relatedEntityId: booking.id,
-          },
-        });
+        await this.notificationService.create(
+          booking.userId,
+          'BOOKING_REMINDER',
+          'Booking Reminder',
+          `Reminder: Your booking for ${booking.asset.name} starts at ${booking.startTime.toLocaleTimeString()}.`,
+          'ResourceBooking',
+          booking.id
+        );
       }
     }
   }

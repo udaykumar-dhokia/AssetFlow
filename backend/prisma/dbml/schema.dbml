@@ -178,6 +178,8 @@ Table activity_logs {
   entityType String [not null]
   entityId String [not null]
   details Json
+  ipAddress String
+  userAgent String
   createdAt DateTime [default: `now()`, not null]
   user users [not null]
 }
@@ -186,6 +188,7 @@ Table notifications {
   id String [pk]
   userId String [not null]
   type String [not null]
+  title String [not null]
   message String [not null]
   isRead Boolean [not null, default: false]
   relatedEntityType String

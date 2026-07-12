@@ -10,14 +10,18 @@ import { createLogger } from '../../utils/logger';
 import { successResponse } from '../../utils/response';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
+import { ActivityLogService } from '../activity-log/activity-log.service';
 
 const log = createLogger('CategoryService');
 
 @Injectable()
 export class CategoryService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly activityLogService: ActivityLogService,
+  ) {}
 
-  async create(dto: CreateCategoryDto) {
+  async create(dto: CreateCategoryDto, userId: string) {
     const existing = await this.prisma.assetCategory.findUnique({
       where: { name: dto.name },
     });
@@ -36,6 +40,15 @@ export class CategoryService {
     });
 
     log.info('Category created', { id: category.id, name: category.name });
+    
+    await this.activityLogService.logAction(
+      userId,
+      'CATEGORY_CREATED',
+      'AssetCategory',
+      category.id,
+      { new_data: category }
+    );
+
     return successResponse(category, 'Category created', 'CREATED');
   }
 
@@ -56,7 +69,7 @@ export class CategoryService {
     return successResponse(category, 'Category fetched');
   }
 
-  async update(id: string, dto: UpdateCategoryDto) {
+  async update(id: string, dto: UpdateCategoryDto, userId: string) {
     const category = await this.prisma.assetCategory.findUnique({ where: { id } });
     if (!category) throw new NotFoundException('Category not found');
 
@@ -79,10 +92,19 @@ export class CategoryService {
     });
 
     log.info('Category updated', { id });
+    
+    await this.activityLogService.logAction(
+      userId,
+      'CATEGORY_UPDATED',
+      'AssetCategory',
+      id,
+      { old_data: category, new_data: updated }
+    );
+
     return successResponse(updated, 'Category updated');
   }
 
-  async remove(id: string) {
+  async remove(id: string, userId: string) {
     const category = await this.prisma.assetCategory.findUnique({
       where: { id },
       include: { _count: { select: { assets: true } } },
@@ -98,6 +120,15 @@ export class CategoryService {
     await this.prisma.assetCategory.delete({ where: { id } });
 
     log.info('Category deleted', { id });
+    
+    await this.activityLogService.logAction(
+      userId,
+      'CATEGORY_DELETED',
+      'AssetCategory',
+      id,
+      { old_data: category }
+    );
+
     return successResponse(null, 'Category deleted');
   }
 }
