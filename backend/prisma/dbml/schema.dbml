@@ -1,0 +1,266 @@
+//// ------------------------------------------------------
+//// THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+//// ------------------------------------------------------
+
+Table users {
+  id String [pk]
+  name String [not null]
+  email String [unique, not null]
+  passwordHash String [not null]
+  role Role [not null]
+  departmentId String
+  status Status [not null, default: 'ACTIVE']
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  department departments
+  headedDepartments departments [not null]
+  assetAllocations asset_allocations [not null]
+  transferRequests asset_allocations [not null]
+  resourceBookings resource_bookings [not null]
+  maintenanceReqs maintenance_requests [not null]
+  auditCycles audit_cycles [not null]
+  activityLogs activity_logs [not null]
+  notifications notifications [not null]
+}
+
+Table departments {
+  id String [pk]
+  name String [unique, not null]
+  parentDepartmentId String
+  headUserId String
+  status Status [not null, default: 'ACTIVE']
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  parentDepartment departments
+  subDepartments departments [not null]
+  headUser users
+  members users [not null]
+  assetAllocations asset_allocations [not null]
+}
+
+Table asset_categories {
+  id String [pk]
+  name String [unique, not null]
+  customFieldsSchema Json
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  assets assets [not null]
+}
+
+Table assets {
+  id String [pk]
+  name String [not null]
+  categoryId String [not null]
+  assetTag String [unique, not null]
+  serialNumber String
+  acquisitionDate DateTime
+  acquisitionCost Decimal
+  condition String
+  location String
+  photoUrl String
+  isSharedBookable Boolean [not null, default: false]
+  status AssetStatus [not null, default: 'AVAILABLE']
+  customAttributes Json
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  category asset_categories [not null]
+  allocations asset_allocations [not null]
+  bookings resource_bookings [not null]
+  maintenanceReqs maintenance_requests [not null]
+  auditItems audit_items [not null]
+}
+
+Table asset_allocations {
+  id String [pk]
+  assetId String [not null]
+  allocatedToUserId String
+  allocatedToDepartmentId String
+  expectedReturnDate DateTime
+  actualReturnDate DateTime
+  returnConditionNotes String
+  status AllocationStatus [not null, default: 'ACTIVE']
+  transferReqByUserId String
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  asset assets [not null]
+  allocatedToUser users
+  allocatedToDept departments
+  transferRequester users
+}
+
+Table resource_bookings {
+  id String [pk]
+  assetId String [not null]
+  userId String [not null]
+  startTime DateTime [not null]
+  endTime DateTime [not null]
+  status BookingStatus [not null, default: 'UPCOMING']
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  asset assets [not null]
+  user users [not null]
+}
+
+Table maintenance_requests {
+  id String [pk]
+  assetId String [not null]
+  requestedByUserId String [not null]
+  issueDescription String [not null]
+  priority Priority [not null, default: 'LOW']
+  photoUrl String
+  status MaintenanceStatus [not null, default: 'PENDING']
+  assignedTechnicianName String
+  resolutionNotes String
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  asset assets [not null]
+  requestedBy users [not null]
+}
+
+Table audit_cycles {
+  id String [pk]
+  name String [not null]
+  scopeDepartmentId String
+  scopeLocation String
+  startDate DateTime [not null]
+  endDate DateTime [not null]
+  status AuditStatus [not null, default: 'OPEN']
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  auditors users [not null]
+  auditItems audit_items [not null]
+}
+
+Table audit_items {
+  id String [pk]
+  auditCycleId String [not null]
+  assetId String [not null]
+  status AuditItemStatus [not null]
+  notes String
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  auditCycle audit_cycles [not null]
+  asset assets [not null]
+}
+
+Table activity_logs {
+  id String [pk]
+  userId String [not null]
+  action String [not null]
+  entityType String [not null]
+  entityId String [not null]
+  details Json
+  createdAt DateTime [default: `now()`, not null]
+  user users [not null]
+}
+
+Table notifications {
+  id String [pk]
+  userId String [not null]
+  type String [not null]
+  message String [not null]
+  isRead Boolean [not null, default: false]
+  relatedEntityType String
+  relatedEntityId String
+  createdAt DateTime [default: `now()`, not null]
+  user users [not null]
+}
+
+Table AuditCycleAuditors {
+  auditcyclesId String [ref: > audit_cycles.id]
+  auditorsId String [ref: > users.id]
+}
+
+Enum Role {
+  ADMIN
+  ASSET_MANAGER
+  DEPT_HEAD
+  EMPLOYEE
+}
+
+Enum Status {
+  ACTIVE
+  INACTIVE
+}
+
+Enum AssetStatus {
+  AVAILABLE
+  ALLOCATED
+  RESERVED
+  UNDER_MAINTENANCE
+  LOST
+  RETIRED
+  DISPOSED
+}
+
+Enum AllocationStatus {
+  ACTIVE
+  RETURNED
+  TRANSFER_REQUESTED
+}
+
+Enum BookingStatus {
+  UPCOMING
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
+Enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+Enum MaintenanceStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  TECH_ASSIGNED
+  IN_PROGRESS
+  RESOLVED
+}
+
+Enum AuditStatus {
+  OPEN
+  CLOSED
+}
+
+Enum AuditItemStatus {
+  VERIFIED
+  MISSING
+  DAMAGED
+}
+
+Ref: users.departmentId - departments.id
+
+Ref: departments.parentDepartmentId - departments.id
+
+Ref: departments.headUserId - users.id
+
+Ref: assets.categoryId > asset_categories.id
+
+Ref: asset_allocations.assetId > assets.id
+
+Ref: asset_allocations.allocatedToUserId > users.id
+
+Ref: asset_allocations.allocatedToDepartmentId > departments.id
+
+Ref: asset_allocations.transferReqByUserId > users.id
+
+Ref: resource_bookings.assetId > assets.id
+
+Ref: resource_bookings.userId > users.id
+
+Ref: maintenance_requests.assetId > assets.id
+
+Ref: maintenance_requests.requestedByUserId > users.id
+
+Ref: audit_items.auditCycleId > audit_cycles.id
+
+Ref: audit_items.assetId > assets.id
+
+Ref: activity_logs.userId > users.id
+
+Ref: notifications.userId > users.id
