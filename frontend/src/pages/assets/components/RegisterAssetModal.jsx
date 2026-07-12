@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button'
 import FormInputField from '@/components/common/FormInputField'
 import FormSelect from '@/components/common/FormSelect'
 import FormCheckbox from '@/components/common/FormCheckbox'
+import FormDatePicker from '@/components/common/FormDatePicker'
 import { useCategories } from '@/hooks/useOrgSetup'
 import { useCreateAsset } from '@/hooks/useAssets'
 import { Separator } from '@/components/ui/separator'
@@ -150,11 +151,10 @@ export default function RegisterAssetModal({ open, onOpenChange }) {
               errors={errors}
             />
 
-            <FormInputField
+            <FormDatePicker
               name="acquisitionDate"
               control={control}
               label="Acquisition Date"
-              type="date"
               errors={errors}
             />
 

@@ -35,6 +35,7 @@ export function DataTable({
   data,
   searchKey,
   searchPlaceholder = "Search...",
+  isLoading = false,
   // Server-side support props
   pageCount,
   rowCount,
@@ -179,7 +180,17 @@ export function DataTable({
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ? (
+            {isLoading ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <TableRow key={i}>
+                  {columns.map((_, colIndex) => (
+                    <TableCell key={colIndex}>
+                      <div className="h-5 w-full bg-slate-200 dark:bg-slate-800 rounded animate-pulse" />
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}

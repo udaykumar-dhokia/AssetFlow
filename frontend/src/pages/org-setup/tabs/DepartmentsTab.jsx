@@ -117,16 +117,13 @@ export default function DepartmentsTab() {
         </Button>
       </div>
 
-      {isLoading ? (
-        <div className="py-10 text-center text-muted-foreground">Loading departments...</div>
-      ) : (
-        <DataTable
-          columns={columns}
-          data={departments}
-          searchKey="name"
-          searchPlaceholder="Search departments..."
-        />
-      )}
+      <DataTable
+        isLoading={isLoading}
+        columns={columns}
+        data={departments}
+        searchKey="name"
+        searchPlaceholder="Search departments..."
+      />
 
       <DepartmentForm
         open={formOpen}

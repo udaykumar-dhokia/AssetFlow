@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import FormSelect from '@/components/common/FormSelect'
-import FormInputField from '@/components/common/FormInputField'
+import FormDatePicker from '@/components/common/FormDatePicker'
 import { useEmployees, useDepartments } from '@/hooks/useOrgSetup'
 import { useAllocateAsset } from '@/hooks/useAllocations'
 import { Label } from '@/components/ui/label'
@@ -105,11 +105,10 @@ export default function AllocateAssetModal({ open, onOpenChange, assetId }) {
             errors={errors}
           />
 
-          <FormInputField
+          <FormDatePicker
             name="expectedReturnDate"
             control={control}
             label="Expected Return Date"
-            type="date"
             errors={errors}
           />
         </form>

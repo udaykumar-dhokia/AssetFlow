@@ -94,16 +94,13 @@ export default function CategoriesTab() {
         </Button>
       </div>
 
-      {isLoading ? (
-        <div className="py-10 text-center text-muted-foreground">Loading categories...</div>
-      ) : (
-        <DataTable
-          columns={columns}
-          data={categories}
-          searchKey="name"
-          searchPlaceholder="Search categories..."
-        />
-      )}
+      <DataTable
+        isLoading={isLoading}
+        columns={columns}
+        data={categories}
+        searchKey="name"
+        searchPlaceholder="Search categories..."
+      />
 
       <CategoryForm
         open={formOpen}

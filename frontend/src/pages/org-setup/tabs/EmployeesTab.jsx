@@ -153,16 +153,13 @@ export default function EmployeesTab() {
 
   return (
     <div className="space-y-4">
-      {isLoading ? (
-        <div className="py-10 text-center text-muted-foreground">Loading employees...</div>
-      ) : (
-        <DataTable
-          columns={columns}
-          data={employees}
-          searchKey="name"
-          searchPlaceholder="Search employees by name..."
-        />
-      )}
+      <DataTable
+        isLoading={isLoading}
+        columns={columns}
+        data={employees}
+        searchKey="name"
+        searchPlaceholder="Search employees by name..."
+      />
 
       {/* Assign Department Modal */}
       <Dialog open={assignDeptModalOpen} onOpenChange={setAssignDeptModalOpen}>
