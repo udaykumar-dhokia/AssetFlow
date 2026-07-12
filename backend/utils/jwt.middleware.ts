@@ -6,6 +6,7 @@ import {
 import { Request, Response, NextFunction } from 'express';
 import * as jwt from 'jsonwebtoken';
 import { createLogger } from './logger';
+import { PrismaService } from '../src/shared/prisma.service';
 
 const log = createLogger('JwtMiddleware');
 
@@ -22,7 +23,9 @@ export interface AuthRequest extends Request {
 
 @Injectable()
 export class JwtMiddleware implements NestMiddleware {
-  use(req: AuthRequest, res: Response, next: NextFunction) {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async use(req: AuthRequest, res: Response, next: NextFunction) {
     const authHeader = req.headers['authorization'];
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -37,6 +40,14 @@ export class JwtMiddleware implements NestMiddleware {
         process.env.JWT_SECRET as string,
       ) as JwtPayload;
 
+      // Check for the user in db
+      const user = await this.prisma.user.findUnique({
+        where: { id: payload.sub }
+      });
+      if (!user) {
+        throw new UnauthorizedException('User not found');
+      }
+
       req.user = payload;
       log.info(`Authenticated user`, { userId: payload.sub, role: payload.role });
       next();
@@ -44,6 +55,9 @@ export class JwtMiddleware implements NestMiddleware {
       if (err instanceof jwt.TokenExpiredError) {
         log.warn('Token expired', { token: token.slice(0, 20) });
         throw new UnauthorizedException('Token has expired');
+      }
+      if (err instanceof UnauthorizedException) {
+        throw err;
       }
 
       log.warn('Invalid token', { error: (err as Error).message });

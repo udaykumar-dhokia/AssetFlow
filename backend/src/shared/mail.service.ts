@@ -5,8 +5,20 @@ import { createLogger } from '../../utils/logger';
 
 const log = createLogger('MailService');
 
+/**
+ * Service responsible for sending emails via Gmail using OAuth2.
+ *
+ * The service uses the `nodemailer` package configured with Gmail's OAuth2
+ * authentication. Environment variables are expected to be set for the
+ * client ID, client secret, refresh token and the sender email address.
+ */
 @Injectable()
 export class MailService {
+  /**
+   * Creates a nodemailer transport configured for Gmail OAuth2.
+   *
+   * @returns A configured `nodemailer.Transport` instance.
+   */
   private createTransport() {
     const oAuth2Client = new google.auth.OAuth2(
       process.env.GOOGLE_CLIENT_ID,
@@ -30,6 +42,15 @@ export class MailService {
     } as nodemailer.TransportOptions);
   }
 
+  /**
+   * Sends an OTP email to the specified recipient.
+   *
+   * @param to Recipient email address.
+   * @param subject Subject line of the email.
+   * @param otp One‑time password to include in the email body.
+   * @param body Additional message body text.
+   * @returns A promise that resolves when the email has been sent.
+   */
   async sendOtpEmail(to: string, subject: string, otp: string, body: string) {
     const transport = this.createTransport();
 

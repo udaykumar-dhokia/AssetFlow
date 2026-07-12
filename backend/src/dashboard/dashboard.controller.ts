@@ -1,29 +1,18 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Req } from '@nestjs/common';
 import { DashboardService } from './dashboard.service';
+import { AuthRequest } from '../../utils/jwt.middleware';
 
 @Controller('dashboard')
 export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) {}
 
   @Get('kpis')
-  async getKpis(
-    @Query('userId') userId: string,
-    @Query('role') role: string,
-  ) {
-    if (!userId || !role) {
-      return { error: 'userId and role query parameters are required for now.' };
-    }
-    return this.dashboardService.getKpis(userId, role);
+  async getKpis(@Req() req: AuthRequest) {
+    return this.dashboardService.getKpis(req.user.sub, req.user.role);
   }
 
   @Get('returns')
-  async getReturns(
-    @Query('userId') userId: string,
-    @Query('role') role: string,
-  ) {
-    if (!userId || !role) {
-      return { error: 'userId and role query parameters are required for now.' };
-    }
-    return this.dashboardService.getReturns(userId, role);
+  async getReturns(@Req() req: AuthRequest) {
+    return this.dashboardService.getReturns(req.user.sub, req.user.role);
   }
 }

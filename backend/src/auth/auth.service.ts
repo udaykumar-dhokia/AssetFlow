@@ -27,6 +27,12 @@ const OTP_EXPIRY_MINUTES = {
   [OtpType.PASSWORD_RESET]: 15,
 };
 
+/**
+ * AuthService handles user registration, login, OTP generation and
+ * password reset flows. It relies on Prisma for persistence, bcrypt for
+ * password hashing, jsonwebtoken for JWT creation and a MailService for
+ * sending OTP emails.
+ */
 @Injectable()
 export class AuthService {
   constructor(
@@ -34,10 +40,20 @@ export class AuthService {
     private readonly mail: MailService,
   ) {}
 
+  /**
+   * Generates a 6‑digit numeric OTP.
+   * @returns A string representation of the OTP.
+   */
   private generateOtp(): string {
     return crypto.randomInt(100000, 999999).toString();
   }
 
+  /**
+   * Creates a signed JWT containing the user id and role.
+   * @param userId - The user's unique identifier.
+   * @param role - The user's role.
+   * @returns A signed JWT string.
+   */
   private signJwt(userId: string, role: Role): string {
     return jwt.sign(
       { sub: userId, role },
@@ -46,6 +62,13 @@ export class AuthService {
     );
   }
 
+  /**
+   * Creates a new OTP record for the user and returns the OTP value.
+   * Existing unused OTPs for the same user and type are marked as used.
+   * @param userId - The user id.
+   * @param type - The OTP type.
+   * @returns The generated OTP string.
+   */
   private async createOtp(userId: string, type: OtpType): Promise<string> {
     await this.prisma.otpToken.updateMany({
       where: { userId, type, used: false },
@@ -64,6 +87,14 @@ export class AuthService {
     return otp;
   }
 
+  /**
+   * Validates that the provided OTP is correct, unused and not expired.
+   * Marks the OTP as used if validation succeeds.
+   * @param userId - The user id.
+   * @param otp - The OTP string to validate.
+   * @param type - The OTP type.
+   * @throws BadRequestException if the OTP is invalid or expired.
+   */
   private async validateOtp(
     userId: string,
     otp: string,
@@ -87,6 +118,11 @@ export class AuthService {
     });
   }
 
+  /**
+   * Registers a new user and sends an email verification OTP.
+   * @param dto - Signup data transfer object.
+   * @returns A success response containing the user's email.
+   */
   async signup(dto: SignupDto) {
     const existing = await this.prisma.user.findUnique({
       where: { email: dto.email },
@@ -125,6 +161,11 @@ export class AuthService {
     );
   }
 
+  /**
+   * Verifies a user's email using the provided OTP.
+   * @param dto - Verification DTO.
+   * @returns A success response containing a JWT and user info.
+   */
   async verifyEmail(dto: VerifyOtpDto) {
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email },
@@ -155,6 +196,11 @@ export class AuthService {
     );
   }
 
+  /**
+   * Authenticates a user with email and password.
+   * @param dto - Login DTO.
+   * @returns A success response containing a JWT and user info.
+   */
   async login(dto: LoginDto) {
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email },
@@ -184,6 +230,11 @@ export class AuthService {
     );
   }
 
+  /**
+   * Sends a login OTP to the user.
+   * @param dto - Request OTP DTO.
+   * @returns A success response containing the user's email.
+   */
   async requestLoginOtp(dto: RequestOtpDto) {
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email },
@@ -214,6 +265,11 @@ export class AuthService {
     );
   }
 
+  /**
+   * Verifies the login OTP and returns a JWT.
+   * @param dto - Verify OTP DTO.
+   * @returns A success response containing a JWT and user info.
+   */
   async verifyLoginOtp(dto: VerifyOtpDto) {
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email },
@@ -235,6 +291,11 @@ export class AuthService {
     );
   }
 
+  /**
+   * Sends a password reset OTP to the user.
+   * @param dto - Request OTP DTO.
+   * @returns A success response containing the user's email.
+   */
   async forgotPassword(dto: RequestOtpDto) {
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email },
@@ -261,6 +322,11 @@ export class AuthService {
     );
   }
 
+  /**
+   * Resets the user's password after validating the OTP.
+   * @param dto - Reset password DTO.
+   * @returns A success response indicating completion.
+   */
   async resetPassword(dto: ResetPasswordDto) {
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email },
