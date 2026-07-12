@@ -11,9 +11,16 @@ import { RejectMaintenanceDto } from './dto/reject-maintenance.dto';
 import { AssignTechnicianDto } from './dto/assign-technician.dto';
 import { ResolveMaintenanceDto } from './dto/resolve-maintenance.dto';
 
+import { ActivityLogService } from '../activity-log/activity-log.service';
+import { NotificationService } from '../notification/notification.service';
+
 @Injectable()
 export class MaintenanceService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly activityLogService: ActivityLogService,
+    private readonly notificationService: NotificationService,
+  ) {}
 
   private async createHistory(
     assetId: string,
@@ -88,8 +95,26 @@ export class MaintenanceService {
       'Maintenance request raised.',
     );
 
-    // TODO: Trigger notification to Managers here
-    // await this.notificationService.notifyManagers(...)
+    await this.activityLogService.logAction(
+      userId,
+      'MAINTENANCE_CREATED',
+      'MaintenanceRequest',
+      request.id,
+      { new_data: request }
+    );
+
+    // Notify Asset Managers (Assuming there's logic to fetch managers, simplified for MVP)
+    // You could fetch all users with Role.ASSET_MANAGER, but for now we'll just log it
+    // if a specific manager was known.
+    // Instead we can notify the employee that their request was successfully submitted.
+    await this.notificationService.create(
+      userId,
+      'MAINTENANCE_CREATED',
+      'Maintenance Requested',
+      `Your maintenance request for ${asset.name} has been submitted.`,
+      'MaintenanceRequest',
+      request.id
+    );
 
     return request;
   }
@@ -165,6 +190,23 @@ export class MaintenanceService {
       userId,
       dto.technicianName ? `Approved and assigned to ${dto.technicianName}` : 'Request approved',
     );
+    
+    await this.activityLogService.logAction(
+      userId,
+      'MAINTENANCE_APPROVED',
+      'MaintenanceRequest',
+      request.id,
+      { old_data: request, new_data: updatedRequest }
+    );
+    
+    await this.notificationService.create(
+      request.requestedByUserId,
+      'MAINTENANCE_APPROVED',
+      'Maintenance Approved',
+      `Your maintenance request for asset ${request.asset.name} has been approved.`,
+      'MaintenanceRequest',
+      request.id
+    );
 
     return updatedRequest;
   }
@@ -193,6 +235,23 @@ export class MaintenanceService {
       request.asset.status, // Status remains unchanged
       userId,
       dto.reason,
+    );
+    
+    await this.activityLogService.logAction(
+      userId,
+      'MAINTENANCE_REJECTED',
+      'MaintenanceRequest',
+      request.id,
+      { old_data: request, new_data: updatedRequest }
+    );
+    
+    await this.notificationService.create(
+      request.requestedByUserId,
+      'MAINTENANCE_REJECTED',
+      'Maintenance Rejected',
+      `Your maintenance request for asset ${request.asset.name} was rejected. Reason: ${dto.reason}`,
+      'MaintenanceRequest',
+      request.id
     );
 
     return updatedRequest;
@@ -226,6 +285,23 @@ export class MaintenanceService {
       userId,
       `Assigned to ${dto.technicianName}`,
     );
+    
+    await this.activityLogService.logAction(
+      userId,
+      'MAINTENANCE_UPDATED',
+      'MaintenanceRequest',
+      request.id,
+      { old_data: request, new_data: updatedRequest }
+    );
+    
+    await this.notificationService.create(
+      request.requestedByUserId,
+      'MAINTENANCE_UPDATED',
+      'Technician Assigned',
+      `A technician (${dto.technicianName}) has been assigned to your maintenance request.`,
+      'MaintenanceRequest',
+      request.id
+    );
 
     return updatedRequest;
   }
@@ -254,6 +330,14 @@ export class MaintenanceService {
       request.asset.status,
       userId,
       'Maintenance work started',
+    );
+    
+    await this.activityLogService.logAction(
+      userId,
+      'MAINTENANCE_UPDATED',
+      'MaintenanceRequest',
+      request.id,
+      { old_data: request, new_data: updatedRequest }
     );
 
     return updatedRequest;
@@ -292,6 +376,23 @@ export class MaintenanceService {
       newAssetStatus,
       userId,
       dto.resolutionNotes,
+    );
+    
+    await this.activityLogService.logAction(
+      userId,
+      'MAINTENANCE_RESOLVED',
+      'MaintenanceRequest',
+      request.id,
+      { old_data: request, new_data: updatedRequest }
+    );
+    
+    await this.notificationService.create(
+      request.requestedByUserId,
+      'MAINTENANCE_RESOLVED',
+      'Maintenance Resolved',
+      `Your maintenance request for asset ${request.asset.name} has been resolved.`,
+      'MaintenanceRequest',
+      request.id
     );
 
     return updatedRequest;

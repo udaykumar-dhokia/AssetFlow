@@ -18,8 +18,8 @@ export class AllocationController {
   @Post()
   @Roles(Role.ADMIN, Role.ASSET_MANAGER, Role.DEPT_HEAD)
   @ApiOperation({ summary: 'Allocate an asset to a user or department' })
-  async allocate(@Body() createAllocationDto: CreateAllocationDto) {
-    return this.allocationService.allocate(createAllocationDto);
+  async allocate(@Body() createAllocationDto: CreateAllocationDto, @Req() req: AuthRequest) {
+    return this.allocationService.allocate(createAllocationDto, req.user.sub);
   }
 
   @Post('asset/:assetId/transfer-request')
@@ -35,8 +35,8 @@ export class AllocationController {
   @Post(':id/approve-transfer')
   @Roles(Role.ADMIN, Role.ASSET_MANAGER, Role.DEPT_HEAD)
   @ApiOperation({ summary: 'Approve a transfer request' })
-  async approveTransfer(@Param('id') id: string) {
-    return this.allocationService.approveTransfer(id);
+  async approveTransfer(@Param('id') id: string, @Req() req: AuthRequest) {
+    return this.allocationService.approveTransfer(id, req.user.sub);
   }
 
   @Post(':id/return')
@@ -45,7 +45,8 @@ export class AllocationController {
   async returnAsset(
     @Param('id') id: string,
     @Body() returnDto: ReturnAssetDto,
+    @Req() req: AuthRequest,
   ) {
-    return this.allocationService.returnAsset(id, returnDto);
+    return this.allocationService.returnAsset(id, returnDto, req.user.sub);
   }
 }

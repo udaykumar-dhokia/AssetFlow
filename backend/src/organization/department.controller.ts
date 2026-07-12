@@ -6,11 +6,13 @@ import {
   Patch,
   Post,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Role } from '@prisma/client';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { AuthRequest } from '../../utils/jwt.middleware';
 import { DepartmentService } from './department.service';
 import { CreateDepartmentDto } from './dto/create-department.dto';
 import { UpdateDepartmentDto } from './dto/update-department.dto';
@@ -25,8 +27,8 @@ export class DepartmentController {
   @Post()
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Create a new department' })
-  create(@Body() dto: CreateDepartmentDto) {
-    return this.departmentService.create(dto);
+  create(@Body() dto: CreateDepartmentDto, @Req() req: AuthRequest) {
+    return this.departmentService.create(dto, req.user.sub);
   }
 
   @Get()
@@ -46,14 +48,14 @@ export class DepartmentController {
   @Patch(':id')
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Update department name, parent or head user' })
-  update(@Param('id') id: string, @Body() dto: UpdateDepartmentDto) {
-    return this.departmentService.update(id, dto);
+  update(@Param('id') id: string, @Body() dto: UpdateDepartmentDto, @Req() req: AuthRequest) {
+    return this.departmentService.update(id, dto, req.user.sub);
   }
 
   @Patch(':id/deactivate')
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Deactivate a department' })
-  deactivate(@Param('id') id: string) {
-    return this.departmentService.deactivate(id);
+  deactivate(@Param('id') id: string, @Req() req: AuthRequest) {
+    return this.departmentService.deactivate(id, req.user.sub);
   }
 }
