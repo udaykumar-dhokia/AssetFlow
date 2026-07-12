@@ -1,7 +1,10 @@
 import { Controller, Get, Req } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { DashboardService } from './dashboard.service';
 import { AuthRequest } from '../../utils/jwt.middleware';
 
+@ApiTags('Dashboard')
+@ApiBearerAuth()
 @Controller('dashboard')
 export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) {}
