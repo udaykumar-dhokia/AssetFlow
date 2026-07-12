@@ -140,13 +140,9 @@ export class AuthService {
         email: dto.email,
         passwordHash,
         role: dto.role,
-        userRoles: {
-          create: {
-            role: dto.role,
-          },
-        },
       },
     });
+
 
     const otp = await this.createOtp(user.id, OtpType.EMAIL_VERIFICATION);
 

@@ -26,6 +26,14 @@ export class JwtMiddleware implements NestMiddleware {
   constructor(private readonly prisma: PrismaService) {}
 
   async use(req: AuthRequest, res: Response, next: NextFunction) {
+    const url = req.originalUrl || req.url || req.path;
+    log.info('JWT middleware hit', { path: req.path, originalUrl: req.originalUrl, url: req.url });
+
+    if (url.startsWith('/auth')) {
+      log.info('Skipping JWT for public auth route', { url });
+      return next();
+    }
+
     const authHeader = req.headers['authorization'];
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -40,16 +48,16 @@ export class JwtMiddleware implements NestMiddleware {
         process.env.JWT_SECRET as string,
       ) as JwtPayload;
 
-      // Check for the user in db
       const user = await this.prisma.user.findUnique({
-        where: { id: payload.sub }
+        where: { id: payload.sub },
       });
+
       if (!user) {
         throw new UnauthorizedException('User not found');
       }
 
       req.user = payload;
-      log.info(`Authenticated user`, { userId: payload.sub, role: payload.role });
+      log.info('Authenticated user', { userId: payload.sub, role: payload.role });
       next();
     } catch (err) {
       if (err instanceof jwt.TokenExpiredError) {

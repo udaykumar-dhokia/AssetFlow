@@ -1,13 +1,21 @@
-import { Module } from '@nestjs/common';
+import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { SharedModule } from './shared/shared.module';
 import { AuthModule } from './auth/auth.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { OrganizationModule } from './organization/organization.module';
+import { JwtMiddleware } from '../utils/jwt.middleware';
 
 @Module({
-  imports: [SharedModule, AuthModule, DashboardModule],
+  imports: [SharedModule, AuthModule, DashboardModule, OrganizationModule],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(JwtMiddleware)
+      .forRoutes('*');
+  }
+}
