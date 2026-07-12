@@ -23,6 +23,19 @@ Table users {
   activityLogs activity_logs [not null]
   notifications notifications [not null]
   otpTokens otp_tokens [not null]
+  userRoles user_roles [not null]
+  maintenanceHistories maintenance_histories [not null]
+}
+
+Table user_roles {
+  id String [pk]
+  userId String [not null]
+  role Role [not null]
+  user users [not null]
+
+  indexes {
+    (userId, role) [unique]
+  }
 }
 
 Table otp_tokens {
@@ -81,6 +94,7 @@ Table assets {
   bookings resource_bookings [not null]
   maintenanceReqs maintenance_requests [not null]
   auditItems audit_items [not null]
+  maintenanceHistories maintenance_histories [not null]
 }
 
 Table asset_allocations {
@@ -128,6 +142,7 @@ Table maintenance_requests {
   updatedAt DateTime [not null]
   asset assets [not null]
   requestedBy users [not null]
+  history maintenance_histories [not null]
 }
 
 Table audit_cycles {
@@ -177,6 +192,21 @@ Table notifications {
   relatedEntityId String
   createdAt DateTime [default: `now()`, not null]
   user users [not null]
+}
+
+Table maintenance_histories {
+  id String [pk]
+  assetId String [not null]
+  maintenanceRequestId String [not null]
+  action String [not null]
+  oldStatus String
+  newStatus String
+  performedByUserId String [not null]
+  remarks String
+  createdAt DateTime [default: `now()`, not null]
+  asset assets [not null]
+  maintenanceRequest maintenance_requests [not null]
+  performedBy users [not null]
 }
 
 Table AuditCycleAuditors {
@@ -254,6 +284,8 @@ Enum AuditItemStatus {
 
 Ref: users.departmentId - departments.id
 
+Ref: user_roles.userId > users.id [delete: Cascade]
+
 Ref: otp_tokens.userId > users.id
 
 Ref: departments.parentDepartmentId - departments.id
@@ -285,3 +317,9 @@ Ref: audit_items.assetId > assets.id
 Ref: activity_logs.userId > users.id
 
 Ref: notifications.userId > users.id
+
+Ref: maintenance_histories.assetId > assets.id
+
+Ref: maintenance_histories.maintenanceRequestId > maintenance_requests.id
+
+Ref: maintenance_histories.performedByUserId > users.id

@@ -143,6 +143,7 @@ export class AuthService {
       },
     });
 
+
     const otp = await this.createOtp(user.id, OtpType.EMAIL_VERIFICATION);
 
     await this.mail.sendOtpEmail(

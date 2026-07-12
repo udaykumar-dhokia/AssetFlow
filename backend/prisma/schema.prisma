@@ -102,8 +102,21 @@ model User {
   activityLogs     ActivityLog[]
   notifications    Notification[]
   otpTokens        OtpToken[]
+  userRoles        UserRole[]
+  maintenanceHistories MaintenanceHistory[] @relation("UserMaintenanceHistory")
 
   @@map("users")
+}
+
+model UserRole {
+  id     String @id @default(uuid())
+  userId String @map("user_id")
+  role   Role
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, role])
+  @@map("user_roles")
 }
 
 model OtpToken {
@@ -173,6 +186,7 @@ model Asset {
   bookings        ResourceBooking[]
   maintenanceReqs MaintenanceRequest[]
   auditItems      AuditItem[]
+  maintenanceHistories MaintenanceHistory[]
 
   @@map("assets")
 }
@@ -229,6 +243,7 @@ model MaintenanceRequest {
 
   asset       Asset @relation(fields: [assetId], references: [id])
   requestedBy User  @relation("MaintenanceRequester", fields: [requestedByUserId], references: [id])
+  history     MaintenanceHistory[]
 
   @@map("maintenance_requests")
 }
@@ -292,4 +307,22 @@ model Notification {
   user User @relation(fields: [userId], references: [id])
 
   @@map("notifications")
+}
+
+model MaintenanceHistory {
+  id                   String             @id @default(uuid())
+  assetId              String             @map("asset_id")
+  maintenanceRequestId String             @map("maintenance_request_id")
+  action               String
+  oldStatus            String?            @map("old_status")
+  newStatus            String?            @map("new_status")
+  performedByUserId    String             @map("performed_by_user_id")
+  remarks              String?
+  createdAt            DateTime           @default(now()) @map("created_at")
+
+  asset              Asset              @relation(fields: [assetId], references: [id])
+  maintenanceRequest MaintenanceRequest @relation(fields: [maintenanceRequestId], references: [id])
+  performedBy        User               @relation("UserMaintenanceHistory", fields: [performedByUserId], references: [id])
+
+  @@map("maintenance_histories")
 }
