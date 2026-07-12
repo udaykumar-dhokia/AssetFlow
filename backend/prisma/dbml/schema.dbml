@@ -10,6 +10,7 @@ Table users {
   role Role [not null]
   departmentId String
   status Status [not null, default: 'ACTIVE']
+  isEmailVerified Boolean [not null, default: false]
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
   department departments
@@ -21,6 +22,18 @@ Table users {
   auditCycles audit_cycles [not null]
   activityLogs activity_logs [not null]
   notifications notifications [not null]
+  otpTokens otp_tokens [not null]
+}
+
+Table otp_tokens {
+  id String [pk]
+  userId String [not null]
+  otp String [not null]
+  type OtpType [not null]
+  expiresAt DateTime [not null]
+  used Boolean [not null, default: false]
+  createdAt DateTime [default: `now()`, not null]
+  user users [not null]
 }
 
 Table departments {
@@ -183,6 +196,12 @@ Enum Status {
   INACTIVE
 }
 
+Enum OtpType {
+  EMAIL_VERIFICATION
+  LOGIN
+  PASSWORD_RESET
+}
+
 Enum AssetStatus {
   AVAILABLE
   ALLOCATED
@@ -234,6 +253,8 @@ Enum AuditItemStatus {
 }
 
 Ref: users.departmentId - departments.id
+
+Ref: otp_tokens.userId > users.id
 
 Ref: departments.parentDepartmentId - departments.id
 
