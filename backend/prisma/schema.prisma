@@ -102,8 +102,20 @@ model User {
   activityLogs     ActivityLog[]
   notifications    Notification[]
   otpTokens        OtpToken[]
+  userRoles        UserRole[]
 
   @@map("users")
+}
+
+model UserRole {
+  id     String @id @default(uuid())
+  userId String @map("user_id")
+  role   Role
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, role])
+  @@map("user_roles")
 }
 
 model OtpToken {

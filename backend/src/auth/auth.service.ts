@@ -140,6 +140,11 @@ export class AuthService {
         email: dto.email,
         passwordHash,
         role: dto.role,
+        userRoles: {
+          create: {
+            role: dto.role,
+          },
+        },
       },
     });
 

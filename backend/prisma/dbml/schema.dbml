@@ -23,6 +23,18 @@ Table users {
   activityLogs activity_logs [not null]
   notifications notifications [not null]
   otpTokens otp_tokens [not null]
+  userRoles user_roles [not null]
+}
+
+Table user_roles {
+  id String [pk]
+  userId String [not null]
+  role Role [not null]
+  user users [not null]
+
+  indexes {
+    (userId, role) [unique]
+  }
 }
 
 Table otp_tokens {
@@ -253,6 +265,8 @@ Enum AuditItemStatus {
 }
 
 Ref: users.departmentId - departments.id
+
+Ref: user_roles.userId > users.id [delete: Cascade]
 
 Ref: otp_tokens.userId > users.id
 
