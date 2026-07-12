@@ -39,14 +39,16 @@ export function ReusableTabs({
       className={cn("w-full", className)}
       {...props}
     >
-      <TabsList className={cn("w-full justify-start rounded-none border-b bg-transparent p-0", listClassName)}>
+      <TabsList 
+        className={cn("w-full justify-start rounded-none border-b border-border bg-transparent p-0", listClassName)}
+      >
         {tabs.map((tab) => (
           <TabsTrigger
             key={tab.value}
             value={tab.value}
             disabled={tab.disabled}
             className={cn(
-              "relative h-9 rounded-none border-b-2 border-b-transparent bg-transparent px-4 pb-3 pt-2 font-semibold text-muted-foreground shadow-none transition-none data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none",
+              "relative h-10 rounded-none border-b-2 border-b-transparent bg-transparent px-4 pb-3 pt-2 font-semibold text-muted-foreground shadow-none transition-none data-active:border-b-[var(--border-accent)] data-active:text-[var(--text-accent)] data-active:shadow-none hover:text-foreground",
               triggerClassName
             )}
           >
@@ -58,7 +60,7 @@ export function ReusableTabs({
         <TabsContent
           key={tab.value}
           value={tab.value}
-          className={cn("mt-4 outline-none", contentClassName)}
+          className={cn("mt-6 outline-none", contentClassName)}
         >
           {tab.content}
         </TabsContent>

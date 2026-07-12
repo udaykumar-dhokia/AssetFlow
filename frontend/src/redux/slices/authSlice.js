@@ -6,6 +6,7 @@ import { createSlice } from '@reduxjs/toolkit'
 import { destroySocket } from '@/socket'
 
 const TOKEN_KEY = 'assetflow_token'
+const USER_KEY = 'assetflow_user'
 
 // ── Initial State ────────────────────────────────────────────
 const initialState = {
@@ -13,7 +14,7 @@ const initialState = {
   token: localStorage.getItem(TOKEN_KEY) ?? null,
 
   /** Logged-in user object */
-  user: null,
+  user: localStorage.getItem(USER_KEY) ? JSON.parse(localStorage.getItem(USER_KEY)) : null,
 
   /** True while verifying token on app startup */
   isInitializing: true,
@@ -37,6 +38,7 @@ const authSlice = createSlice({
       state.user = user
       state.isAuthLoading = false
       localStorage.setItem(TOKEN_KEY, token)
+      localStorage.setItem(USER_KEY, JSON.stringify(user))
     },
 
     /**
@@ -70,6 +72,7 @@ const authSlice = createSlice({
       state.isInitializing = false
       state.isAuthLoading = false
       localStorage.removeItem(TOKEN_KEY)
+      localStorage.removeItem(USER_KEY)
       destroySocket()
     },
   },

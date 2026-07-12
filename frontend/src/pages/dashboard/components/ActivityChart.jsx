@@ -28,13 +28,13 @@ export default function ActivityChart({ kpis }) {
   const totalAssets = (kpis?.assetsAvailable || 0) + (kpis?.assetsAllocated || 0) + (kpis?.maintenanceToday || 0)
 
   return (
-    <Card className="h-full border-slate-200/50 dark:border-slate-800/50 shadow-sm backdrop-blur-xl bg-white/60 dark:bg-slate-900/60 overflow-hidden">
-      <CardHeader className="pb-2">
+    <Card className="h-[420px] flex flex-col border-slate-200/50 dark:border-slate-800/50 shadow-sm backdrop-blur-xl bg-white/60 dark:bg-slate-900/60 overflow-hidden">
+      <CardHeader className="pb-2 shrink-0">
         <CardTitle className="text-lg">Asset Distribution</CardTitle>
         <CardDescription>Current snapshot of asset statuses</CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="h-[300px] w-full mt-4 flex items-center justify-center">
+      <CardContent className="flex-1 flex flex-col min-h-0 p-6 pt-0">
+        <div className="flex-1 w-full flex items-center justify-center min-h-0">
           {hasData ? (
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>

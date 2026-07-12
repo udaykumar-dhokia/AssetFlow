@@ -113,7 +113,7 @@ export default function CategoryForm({ open, onOpenChange, initialData }) {
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button type="submit" form="category-form" disabled={isCreating || isUpdating}>
+          <Button type="submit" form="category-form" disabled={isCreating || isUpdating} className="bg-blue-600 hover:bg-blue-700 text-white border-0">
             {isCreating || isUpdating ? 'Saving...' : 'Save'}
           </Button>
         </DialogFooter>

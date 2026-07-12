@@ -9,18 +9,19 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuGroup,
 } from '@/components/ui/dropdown-menu'
 import { useCategories, useDeleteCategory } from '@/hooks/useOrgSetup'
 import CategoryForm from '../components/CategoryForm'
 
 export default function CategoriesTab() {
-  const { data: envelope, isLoading } = useCategories()
+  const { data: categoriesData, isLoading } = useCategories()
   const { mutate: deleteCategory } = useDeleteCategory()
   
   const [formOpen, setFormOpen] = useState(false)
   const [editingCategory, setEditingCategory] = useState(null)
 
-  const categories = envelope?.data || []
+  const categories = categoriesData || []
 
   const handleEdit = (category) => {
     setEditingCategory(category)
@@ -60,14 +61,14 @@ export default function CategoriesTab() {
         const category = row.original
         return (
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
+            <DropdownMenuTrigger render={<Button variant="ghost" className="h-8 w-8 p-0" />}>
+              <span className="sr-only">Open menu</span>
+              <MoreHorizontal className="h-4 w-4" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuGroup>
+                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              </DropdownMenuGroup>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => handleEdit(category)}>
                 <Edit className="mr-2 h-4 w-4" /> Edit
@@ -88,7 +89,7 @@ export default function CategoriesTab() {
   return (
     <div className="space-y-4">
       <div className="flex justify-end">
-        <Button onClick={handleCreate} className="gap-2">
+        <Button onClick={handleCreate} className="gap-2 bg-blue-600 hover:bg-blue-700 text-white border-0">
           <Plus size={16} /> Add Category
         </Button>
       </div>

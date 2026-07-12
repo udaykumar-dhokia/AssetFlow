@@ -22,7 +22,7 @@ export default function FormSelect({
   placeholder = "Select an option",
   errors,
   rules,
-  size = 'h-11',
+  size = 'h-12',
   ...rest
 }) {
   const errorMessage = errors?.[name]?.message
@@ -56,11 +56,13 @@ export default function FormSelect({
               `}
               {...rest}
             >
-              <SelectValue placeholder={placeholder} />
+              <SelectValue placeholder={placeholder}>
+                {field.value ? options.find(o => String(o.value) === String(field.value))?.label || field.value : undefined}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               {options.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
+                <SelectItem key={option.value} value={option.value} label={option.label} textValue={option.label}>
                   {option.label}
                 </SelectItem>
               ))}

@@ -53,11 +53,10 @@ export default function OrgSetupPage() {
           </p>
         </div>
 
-        <div className="bg-card text-card-foreground shadow-sm rounded-xl border">
+        <div className="w-full">
           <ReusableTabs 
             tabs={orgTabs} 
             defaultValue="departments"
-            className="p-1"
           />
         </div>
       </div>

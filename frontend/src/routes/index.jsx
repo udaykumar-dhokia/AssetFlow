@@ -25,6 +25,7 @@ const NotFoundPage       = lazy(() => import('@/pages/NotFoundPage'))
 const DashboardPage     = lazy(() => import('@/pages/dashboard/DashboardPage'))
 const OrgSetupPage      = lazy(() => import('@/pages/org-setup/OrgSetupPage'))
 const AssetsPage        = lazy(() => import('@/pages/assets/AssetsPage'))
+const AssetDetailsPage  = lazy(() => import('@/pages/assets/AssetDetailsPage'))
 const AllocationPage    = lazy(() => import('@/pages/allocation/AllocationPage'))
 const BookingPage       = lazy(() => import('@/pages/booking/BookingPage'))
 const MaintenancePage   = lazy(() => import('@/pages/maintenance/MaintenancePage'))
@@ -83,6 +84,7 @@ const router = createBrowserRouter([
             ),
           },
           { path: ROUTES.ASSETS,        element: appPage(AssetsPage) },
+          { path: ROUTES.ASSET_DETAIL,  element: appPage(AssetDetailsPage) },
           { path: ROUTES.ALLOCATION,    element: appPage(AllocationPage) },
           { path: ROUTES.BOOKING,       element: appPage(BookingPage) },
           { path: ROUTES.MAINTENANCE,   element: appPage(MaintenancePage) },
@@ -97,7 +99,7 @@ const router = createBrowserRouter([
           {
             path: ROUTES.REPORTS,
             element: (
-              <RoleGuard allowedRoles={[ROLES.ADMIN, ROLES.ASSET_MANAGER, ROLES.DEPARTMENT_HEAD]}>
+              <RoleGuard allowedRoles={[ROLES.ADMIN, ROLES.ASSET_MANAGER, ROLES.DEPT_HEAD]}>
                 {appPage(ReportsPage)}
               </RoleGuard>
             ),

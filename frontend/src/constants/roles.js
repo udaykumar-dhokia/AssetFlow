@@ -5,7 +5,7 @@
 export const ROLES = {
   ADMIN:            'ADMIN',
   ASSET_MANAGER:    'ASSET_MANAGER',
-  DEPARTMENT_HEAD:  'DEPARTMENT_HEAD',
+  DEPT_HEAD:        'DEPT_HEAD',
   EMPLOYEE:         'EMPLOYEE',
 }
 
@@ -13,7 +13,7 @@ export const ROLES = {
 export const ROLE_LABELS = {
   [ROLES.ADMIN]:           'Administrator',
   [ROLES.ASSET_MANAGER]:   'Asset Manager',
-  [ROLES.DEPARTMENT_HEAD]: 'Department Head',
+  [ROLES.DEPT_HEAD]:       'Department Head',
   [ROLES.EMPLOYEE]:        'Employee',
 }
 

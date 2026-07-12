@@ -51,7 +51,7 @@ export function useAuth() {
     // Role shorthand flags
     isAdmin:          role === ROLES.ADMIN,
     isAssetManager:   role === ROLES.ASSET_MANAGER,
-    isDepartmentHead: role === ROLES.DEPARTMENT_HEAD,
+    isDepartmentHead: role === ROLES.DEPT_HEAD,
     isEmployee:       role === ROLES.EMPLOYEE,
   }
 }

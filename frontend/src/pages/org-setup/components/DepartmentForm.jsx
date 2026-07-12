@@ -30,8 +30,8 @@ export default function DepartmentForm({ open, onOpenChange, initialData }) {
   const { data: envDepts } = useDepartments()
   const { data: envEmps } = useEmployees()
 
-  const departments = envDepts?.data || []
-  const employees = envEmps?.data || []
+  const departments = envDepts || []
+  const employees = envEmps || []
 
   const { control, handleSubmit, reset, formState: { errors } } = useForm({
     resolver: zodResolver(schema),
@@ -46,15 +46,15 @@ export default function DepartmentForm({ open, onOpenChange, initialData }) {
     if (open) {
       if (initialData) {
         reset({
-          name: initialData.name,
-          parentDepartmentId: initialData.parentDepartmentId || null,
-          headUserId: initialData.headUserId || null,
+          name: initialData.name || '',
+          parentDepartmentId: initialData.parentDepartment?.id || '',
+          headUserId: initialData.headUser?.id || '',
         })
       } else {
         reset({
           name: '',
-          parentDepartmentId: null,
-          headUserId: null,
+          parentDepartmentId: '',
+          headUserId: '',
         })
       }
     }
@@ -80,12 +80,18 @@ export default function DepartmentForm({ open, onOpenChange, initialData }) {
   }
 
   // Filter out the current department from parent options if editing
-  const deptOptions = departments
-    .filter(d => !isEditing || d.id !== initialData.id)
-    .map(d => ({ label: d.name, value: d.id }))
+  const deptOptions = [
+    { label: 'None (Top Level)', value: '' },
+    ...departments
+      .filter(d => !isEditing || d.id !== initialData.id)
+      .map(d => ({ label: d.name, value: d.id }))
+  ]
   
-  const empOptions = employees
-    .map(e => ({ label: `${e.name} (${e.email})`, value: e.id }))
+  const empOptions = [
+    { label: 'Unassigned', value: '' },
+    ...employees
+      .map(e => ({ label: `${e.name} (${e.email})`, value: e.id }))
+  ]
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -124,7 +130,7 @@ export default function DepartmentForm({ open, onOpenChange, initialData }) {
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button type="submit" form="department-form" disabled={isCreating || isUpdating}>
+          <Button type="submit" form="department-form" disabled={isCreating || isUpdating} className="bg-blue-600 hover:bg-blue-700 text-white border-0">
             {isCreating || isUpdating ? 'Saving...' : 'Save'}
           </Button>
         </DialogFooter>

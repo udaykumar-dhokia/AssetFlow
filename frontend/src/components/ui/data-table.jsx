@@ -127,10 +127,9 @@ export function DataTable({
         </div>
         <div className="flex items-center space-x-2">
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="ml-auto hidden lg:flex">
+            <DropdownMenuTrigger render={<Button variant="outline" size="sm" className="ml-auto hidden lg:flex">
                 Columns <ChevronDown className="ml-2 h-4 w-4" />
-              </Button>
+              </Button>}>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-[150px]">
               {table
@@ -211,11 +210,7 @@ export function DataTable({
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between px-2">
-        <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
-        </div>
+      <div className="flex items-center justify-end px-2">
         <div className="flex items-center space-x-6 lg:space-x-8">
           <div className="flex items-center space-x-2">
             <p className="text-sm font-medium">Rows per page</p>
@@ -230,7 +225,7 @@ export function DataTable({
               </SelectTrigger>
               <SelectContent side="top">
                 {[10, 20, 30, 40, 50].map((pageSize) => (
-                  <SelectItem key={pageSize} value={`${pageSize}`}>
+                  <SelectItem key={pageSize} value={`${pageSize}`} label={`${pageSize}`} textValue={`${pageSize}`}>
                     {pageSize}
                   </SelectItem>
                 ))}
@@ -297,8 +292,7 @@ export function DataTableColumnHeader({
   return (
     <div className={cn("flex items-center space-x-2", className)}>
       <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
+        <DropdownMenuTrigger render={<Button
             variant="ghost"
             size="sm"
             className="-ml-3 h-8 data-[state=open]:bg-accent"
@@ -311,7 +305,7 @@ export function DataTableColumnHeader({
             ) : (
               <ArrowUpIcon className="ml-2 h-4 w-4 opacity-0 group-hover:opacity-100" />
             )}
-          </Button>
+          </Button>}>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start">
           <DropdownMenuItem onClick={() => column.toggleSorting(false)}>

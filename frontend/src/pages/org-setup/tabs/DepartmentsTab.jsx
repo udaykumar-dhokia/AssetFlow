@@ -10,18 +10,19 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuGroup,
 } from '@/components/ui/dropdown-menu'
 import { useDepartments, useDeactivateDepartment } from '@/hooks/useOrgSetup'
 import DepartmentForm from '../components/DepartmentForm'
 
 export default function DepartmentsTab() {
-  const { data: envelope, isLoading } = useDepartments()
+  const { data: departmentsData, isLoading } = useDepartments()
   const { mutate: deactivateDepartment } = useDeactivateDepartment()
   
   const [formOpen, setFormOpen] = useState(false)
   const [editingDept, setEditingDept] = useState(null)
 
-  const departments = envelope?.data || []
+  const departments = departmentsData || [] 
 
   const handleEdit = (dept) => {
     setEditingDept(dept)
@@ -81,14 +82,14 @@ export default function DepartmentsTab() {
         const dept = row.original
         return (
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
+            <DropdownMenuTrigger render={<Button variant="ghost" className="h-8 w-8 p-0" />}>
+              <span className="sr-only">Open menu</span>
+              <MoreHorizontal className="h-4 w-4" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuGroup>
+                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              </DropdownMenuGroup>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => handleEdit(dept)}>
                 <Edit className="mr-2 h-4 w-4" /> Edit
@@ -111,7 +112,7 @@ export default function DepartmentsTab() {
   return (
     <div className="space-y-4">
       <div className="flex justify-end">
-        <Button onClick={handleCreate} className="gap-2">
+        <Button onClick={handleCreate} className="gap-2 bg-blue-600 hover:bg-blue-700 text-white border-0">
           <Plus size={16} /> Add Department
         </Button>
       </div>

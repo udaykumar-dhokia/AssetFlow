@@ -69,7 +69,7 @@ const NAV_GROUPS = [
     label: 'Governance',
     items: [
       { label: 'Audit',                icon: ClipboardList,   path: ROUTES.AUDIT,         roles: [ROLES.ADMIN, ROLES.ASSET_MANAGER] },
-      { label: 'Reports',              icon: BarChart2,       path: ROUTES.REPORTS,       roles: [ROLES.ADMIN, ROLES.ASSET_MANAGER, ROLES.DEPARTMENT_HEAD] },
+      { label: 'Reports',              icon: BarChart2,       path: ROUTES.REPORTS,       roles: [ROLES.ADMIN, ROLES.ASSET_MANAGER, ROLES.DEPT_HEAD] },
     ],
   },
 ]

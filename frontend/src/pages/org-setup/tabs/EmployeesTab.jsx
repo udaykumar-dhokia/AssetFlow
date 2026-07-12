@@ -10,6 +10,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuGroup,
 } from '@/components/ui/dropdown-menu'
 import { 
   Dialog,
@@ -49,12 +50,12 @@ export default function EmployeesTab() {
   const [selectedDeptId, setSelectedDeptId] = useState('')
   const [selectedRole, setSelectedRole] = useState('')
 
-  const employees = envEmps?.data || []
-  const departments = envDepts?.data || []
+  const employees = envEmps || []
+  const departments = envDepts || []
 
   const handleAssignDeptClick = (emp) => {
     setSelectedEmp(emp)
-    setSelectedDeptId(emp.department?.id || '')
+    setSelectedDeptId(emp.department?.id || 'unassigned')
     setAssignDeptModalOpen(true)
   }
 
@@ -66,7 +67,8 @@ export default function EmployeesTab() {
 
   const handleSaveDepartment = () => {
     if (!selectedEmp || !selectedDeptId) return
-    assignDepartment({ id: selectedEmp.id, departmentId: selectedDeptId }, {
+    const payloadDeptId = selectedDeptId === 'unassigned' ? null : selectedDeptId
+    assignDepartment({ id: selectedEmp.id, departmentId: payloadDeptId }, {
       onSuccess: () => setAssignDeptModalOpen(false)
     })
   }
@@ -121,14 +123,14 @@ export default function EmployeesTab() {
         const isInactive = emp.status === 'INACTIVE'
         return (
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
+            <DropdownMenuTrigger render={<Button variant="ghost" className="h-8 w-8 p-0" />}>
+              <span className="sr-only">Open menu</span>
+              <MoreHorizontal className="h-4 w-4" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuGroup>
+                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              </DropdownMenuGroup>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => handleAssignDeptClick(emp)}>
                 <Building className="mr-2 h-4 w-4" /> Assign Department
@@ -173,11 +175,14 @@ export default function EmployeesTab() {
               <Label>Select Department for {selectedEmp?.name}</Label>
               <Select value={selectedDeptId} onValueChange={setSelectedDeptId}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a department" />
+                  <SelectValue placeholder="Select a department">
+                    {selectedDeptId === 'unassigned' ? 'Unassigned (Remove Department)' : departments.find(d => String(d.id) === String(selectedDeptId))?.name}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="unassigned" label="Unassigned (Remove Department)" textValue="Unassigned (Remove Department)">Unassigned (Remove Department)</SelectItem>
                   {departments.map((d) => (
-                    <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
+                    <SelectItem key={d.id} value={d.id} label={d.name} textValue={d.name}>{d.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -185,7 +190,7 @@ export default function EmployeesTab() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setAssignDeptModalOpen(false)}>Cancel</Button>
-            <Button onClick={handleSaveDepartment} disabled={isAssigning || !selectedDeptId}>
+            <Button onClick={handleSaveDepartment} disabled={isAssigning || !selectedDeptId} className="bg-blue-600 hover:bg-blue-700 text-white border-0">
               {isAssigning ? 'Saving...' : 'Save'}
             </Button>
           </DialogFooter>
@@ -203,13 +208,18 @@ export default function EmployeesTab() {
               <Label>Select Role for {selectedEmp?.name}</Label>
               <Select value={selectedRole} onValueChange={setSelectedRole}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a role" />
+                  <SelectValue placeholder="Select a role">
+                    {selectedRole === 'EMPLOYEE' ? 'Employee' : 
+                     selectedRole === 'DEPT_HEAD' ? 'Department Head' : 
+                     selectedRole === 'ASSET_MANAGER' ? 'Asset Manager' : 
+                     selectedRole === 'ADMIN' ? 'Admin' : undefined}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="EMPLOYEE">Employee</SelectItem>
-                  <SelectItem value="DEPT_HEAD">Department Head</SelectItem>
-                  <SelectItem value="ASSET_MANAGER">Asset Manager</SelectItem>
-                  <SelectItem value="ADMIN">Admin</SelectItem>
+                  <SelectItem value="EMPLOYEE" label="Employee" textValue="Employee">Employee</SelectItem>
+                  <SelectItem value="DEPT_HEAD" label="Department Head" textValue="Department Head">Department Head</SelectItem>
+                  <SelectItem value="ASSET_MANAGER" label="Asset Manager" textValue="Asset Manager">Asset Manager</SelectItem>
+                  <SelectItem value="ADMIN" label="Admin" textValue="Admin">Admin</SelectItem>
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">
@@ -219,7 +229,7 @@ export default function EmployeesTab() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setChangeRoleModalOpen(false)}>Cancel</Button>
-            <Button onClick={handleSaveRole} disabled={isChangingRole || !selectedRole}>
+            <Button onClick={handleSaveRole} disabled={isChangingRole || !selectedRole} className="bg-blue-600 hover:bg-blue-700 text-white border-0">
               {isChangingRole ? 'Saving...' : 'Save'}
             </Button>
           </DialogFooter>

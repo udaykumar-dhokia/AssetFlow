@@ -152,17 +152,21 @@ export default function DashboardPage() {
           transition={{ duration: 0.5, delay: 0.4 }}
           className="grid grid-cols-1 lg:grid-cols-3 gap-6"
         >
-          {/* Main content area (Chart) */}
-          <div className="lg:col-span-2">
-            <ActivityChart kpis={kpis} />
+          {/* Main content area (Returns) */}
+          <div className="lg:col-span-2 flex">
+            <div className="w-full">
+              <ReturnsList 
+                overdueReturns={returns?.overdueReturns} 
+                upcomingReturns={returns?.upcomingReturns} 
+              />
+            </div>
           </div>
 
-          {/* Right sidebar area for Returns */}
-          <div className="lg:col-span-1">
-            <ReturnsList 
-              overdueReturns={returns?.overdueReturns} 
-              upcomingReturns={returns?.upcomingReturns} 
-            />
+          {/* Right sidebar area for Chart */}
+          <div className="lg:col-span-1 flex">
+            <div className="w-full">
+              <ActivityChart kpis={kpis} />
+            </div>
           </div>
         </motion.div>
       </div>
