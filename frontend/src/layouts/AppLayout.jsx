@@ -10,6 +10,10 @@ import Sidebar from './Sidebar'
 import Header  from './Header'
 import { cn }  from '@/lib/utils'
 
+// Shadcn UI components
+import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
+import { TooltipProvider } from '@/components/ui/tooltip'
+
 // Map route paths to page titles for the header
 const ROUTE_TITLES = {
   '/':              'Dashboard',
@@ -36,27 +40,26 @@ export default function AppLayout() {
   const pageTitle = ROUTE_TITLES[location.pathname] ?? ''
 
   return (
-    <div className="app-layout">
-      {/* Sidebar */}
-      <Sidebar />
+    <TooltipProvider>
+      <SidebarProvider>
+        <div className="flex min-h-screen w-full bg-background">
+          {/* Sidebar */}
+          <Sidebar />
 
-      {/* Main content area */}
-      <div className="app-main">
-        {/* Header */}
-        <Header title={pageTitle} />
+          {/* Main content area wrapped in SidebarInset */}
+          <SidebarInset className="flex w-full flex-col">
+            {/* Header */}
+            <Header title={pageTitle} />
 
-        {/* Page Content */}
-        <main
-          className={cn(
-            'app-content',
-            'animate-fade-in',
-          )}
-        >
-          <ErrorBoundary>
-            <Outlet />
-          </ErrorBoundary>
-        </main>
-      </div>
-    </div>
+            {/* Page Content */}
+            <main className="flex-1 overflow-y-auto overflow-x-hidden animate-fade-in p-4">
+              <ErrorBoundary>
+                <Outlet />
+              </ErrorBoundary>
+            </main>
+          </SidebarInset>
+        </div>
+      </SidebarProvider>
+    </TooltipProvider>
   )
 }

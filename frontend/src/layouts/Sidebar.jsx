@@ -1,14 +1,7 @@
 // layouts/Sidebar.jsx
-// Navigation sidebar — premium dark neutral shell.
-// Design reference: Linear, Notion, Vercel Dashboard.
-// Rules:
-//   - Active state = subtle white tint + left pip (accent color)
-//   - Hover = barely-visible white overlay
-//   - Text is muted by default, legible on hover/active
-//   - No indigo fills, no rounded pill backgrounds
-
 import { NavLink, useLocation } from 'react-router-dom'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
+import { motion } from 'motion/react'
 import {
   LayoutDashboard,
   Building2,
@@ -20,17 +13,40 @@ import {
   BarChart2,
   Bell,
   LogOut,
-  PanelLeftClose,
-  PanelLeftOpen,
+  ChevronsUpDown,
 } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 import { ROUTES } from '@/constants/routes'
 import { ROLES } from '@/constants/roles'
-import { toggleSidebar, selectIsSidebarCollapsed } from '@/redux/slices/sidebarSlice'
 import { selectUnreadCount } from '@/redux/slices/notificationSlice'
 import { useAuth } from '@/hooks/useAuth'
 import { getInitials } from '@/utils/formatters'
+
+import {
+  Sidebar as ShadcnSidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarMenuBadge,
+  useSidebar,
+} from '@/components/ui/sidebar'
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  DropdownMenuGroup,
+} from '@/components/ui/dropdown-menu'
 
 // ── Navigation items ──────────────────────────────────────────
 const NAV_GROUPS = [
@@ -58,87 +74,11 @@ const NAV_GROUPS = [
   },
 ]
 
-// ── Single nav item ───────────────────────────────────────────
-function NavItem({ item, isCollapsed, unreadCount }) {
-  const location = useLocation()
-  const isActive =
-    item.path === ROUTES.DASHBOARD
-      ? location.pathname === item.path
-      : location.pathname.startsWith(item.path)
-
-  const Icon  = item.icon
-  const badge = item.path === ROUTES.NOTIFICATIONS ? unreadCount : 0
-
-  return (
-    <NavLink
-      to={item.path}
-      title={isCollapsed ? item.label : undefined}
-      className={cn(
-        'group relative flex items-center gap-2.5 rounded-[4px]',
-        'text-[13px] font-medium transition-colors duration-100',
-        'select-none',
-        isCollapsed ? 'justify-center px-0 py-2 mx-1' : 'px-2.5 py-[7px] mx-1.5',
-        isActive
-          ? 'bg-[var(--sidebar-item-active)] text-[var(--sidebar-text-active)]'
-          : 'text-[var(--sidebar-text)] hover:bg-[var(--sidebar-item-hover)] hover:text-[var(--sidebar-text-hover)]',
-      )}
-    >
-      {/* Active left pip */}
-      {isActive && (
-        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[2px] h-4 rounded-r-full bg-[var(--sidebar-active-pip)]" />
-      )}
-
-      <Icon
-        size={15}
-        strokeWidth={isActive ? 2 : 1.75}
-        className={cn(
-          'flex-shrink-0 transition-colors duration-100',
-          isActive
-            ? 'text-[var(--sidebar-icon-active)]'
-            : 'text-[var(--sidebar-icon)] group-hover:text-[var(--sidebar-icon-hover)]',
-        )}
-      />
-
-      {!isCollapsed && (
-        <>
-          <span className="truncate flex-1">{item.label}</span>
-
-          {badge > 0 && (
-            <span className="ml-auto flex-shrink-0 h-4 min-w-4 px-1 rounded-sm bg-[var(--sidebar-active-pip)] text-white text-[10px] font-semibold leading-4 flex items-center justify-center">
-              {badge > 99 ? '99+' : badge}
-            </span>
-          )}
-        </>
-      )}
-
-      {/* Badge dot in collapsed mode */}
-      {isCollapsed && badge > 0 && (
-        <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-[var(--sidebar-active-pip)]" />
-      )}
-    </NavLink>
-  )
-}
-
-// ── Group label ───────────────────────────────────────────────
-function GroupLabel({ label, isCollapsed }) {
-  if (isCollapsed) return <div className="h-px mx-3 my-1 bg-[var(--sidebar-border)]" />
-  return (
-    <span className={cn(
-      'block px-4 pt-3 pb-1',
-      'text-[10px] font-semibold uppercase tracking-widest',
-      'text-[var(--sidebar-icon)] select-none',
-    )}>
-      {label}
-    </span>
-  )
-}
-
-// ── Sidebar ────────────────────────────────────────────────────
 export default function Sidebar() {
-  const dispatch    = useDispatch()
-  const isCollapsed = useSelector(selectIsSidebarCollapsed)
   const unreadCount = useSelector(selectUnreadCount)
   const { user, role, logout } = useAuth()
+  const { isMobile, state } = useSidebar()
+  const location = useLocation()
 
   const filteredGroups = NAV_GROUPS.map((group) => ({
     ...group,
@@ -146,141 +86,194 @@ export default function Sidebar() {
   })).filter((group) => group.items.length > 0)
 
   return (
-    <aside
-      style={{ width: isCollapsed ? 'var(--sidebar-collapsed-width)' : 'var(--sidebar-width)' }}
-      className={cn(
-        'flex flex-col flex-shrink-0 h-screen sticky top-0',
-        'bg-[var(--bg-sidebar)] border-r border-[var(--sidebar-border)]',
-        'transition-[width] duration-200 ease-in-out overflow-hidden',
-      )}
-    >
-      {/* ── Brand ─────────────────────────────────────────────── */}
-      <div
-        className={cn(
-          'flex items-center flex-shrink-0 h-[var(--header-height)]',
-          'border-b border-[var(--sidebar-border)]',
-          isCollapsed ? 'justify-center px-0' : 'gap-2 px-4',
-        )}
-      >
-        {/* Logo mark — a flat geometric mark, no gradient */}
-        <div className="w-6 h-6 rounded-[4px] bg-[var(--sidebar-active-pip)] flex items-center justify-center flex-shrink-0">
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <rect x="1" y="1" width="4" height="4" rx="0.75" fill="white" opacity="0.9"/>
-            <rect x="7" y="1" width="4" height="4" rx="0.75" fill="white" opacity="0.6"/>
-            <rect x="1" y="7" width="4" height="4" rx="0.75" fill="white" opacity="0.6"/>
-            <rect x="7" y="7" width="4" height="4" rx="0.75" fill="white" opacity="0.3"/>
-          </svg>
+    <ShadcnSidebar variant="sidebar" collapsible="icon">
+      <SidebarHeader className="border-b border-sidebar-border flex items-center justify-center py-4 h-[var(--header-h)] relative z-20">
+        <div className="flex items-center gap-2">
+          {/* Logo mark */}
+          <motion.div 
+            whileHover={{ scale: 1.05, rotate: 5 }}
+            whileTap={{ scale: 0.95 }}
+            className="w-6 h-6 rounded-[4px] bg-[var(--sidebar-active-pip,theme(colors.blue.600))] flex items-center justify-center flex-shrink-0 shadow-sm"
+          >
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <rect x="1" y="1" width="4" height="4" rx="0.75" fill="white" opacity="0.9"/>
+              <rect x="7" y="1" width="4" height="4" rx="0.75" fill="white" opacity="0.6"/>
+              <rect x="1" y="7" width="4" height="4" rx="0.75" fill="white" opacity="0.6"/>
+              <rect x="7" y="7" width="4" height="4" rx="0.75" fill="white" opacity="0.3"/>
+            </svg>
+          </motion.div>
+          {state !== "collapsed" && (
+            <motion.span 
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="font-semibold text-sidebar-foreground truncate tracking-tight"
+            >
+              AssetFlow
+            </motion.span>
+          )}
         </div>
+      </SidebarHeader>
 
-        {!isCollapsed && (
-          <span className="text-white font-semibold text-[14px] tracking-[-0.01em]">
-            AssetFlow
-          </span>
-        )}
-      </div>
-
-      {/* ── Navigation ────────────────────────────────────────── */}
-      <nav className="flex-1 overflow-y-auto overflow-x-hidden py-2 space-y-0">
+      <SidebarContent className="py-2">
         {filteredGroups.map((group, gi) => (
-          <div key={gi}>
-            {group.label && (
-              <GroupLabel label={group.label} isCollapsed={isCollapsed} />
-            )}
-            <div className="space-y-[1px]">
-              {group.items.map((item) => (
-                <NavItem
-                  key={item.path}
-                  item={item}
-                  isCollapsed={isCollapsed}
-                  unreadCount={unreadCount}
-                />
-              ))}
-            </div>
-          </div>
+          <SidebarGroup key={gi} className="px-3">
+            {group.label && <SidebarGroupLabel className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">{group.label}</SidebarGroupLabel>}
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {group.items.map((item) => {
+                  const isActive =
+                    item.path === ROUTES.DASHBOARD
+                      ? location.pathname === item.path
+                      : location.pathname.startsWith(item.path)
+                  return (
+                    <SidebarMenuItem key={item.path}>
+                      <SidebarMenuButton
+                        tooltip={item.label}
+                        render={<NavLink to={item.path} />}
+                        className={cn(
+                          "relative group transition-colors overflow-hidden isolate",
+                          isActive 
+                            ? "text-[var(--sidebar-active-pip,theme(colors.blue.600))] font-medium bg-transparent hover:bg-transparent" 
+                            : "text-sidebar-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent"
+                        )}
+                      >
+                        {isActive && (
+                          <>
+                            <motion.div
+                              layoutId="active-nav-pill"
+                              className="absolute inset-0 rounded-md pointer-events-none -z-10"
+                              style={{ backgroundColor: 'var(--sidebar-active-pip, theme(colors.blue.600))', opacity: 0.12 }}
+                              transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                            />
+                            <motion.div
+                              layoutId="active-nav-pip"
+                              className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-4 bg-[var(--sidebar-active-pip,theme(colors.blue.600))] rounded-r-full pointer-events-none -z-10"
+                              transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                            />
+                          </>
+                        )}
+                        <motion.div
+                          whileHover={{ scale: 1.1, rotate: isActive ? 0 : 5 }}
+                          whileTap={{ scale: 0.9 }}
+                          className="flex items-center justify-center shrink-0"
+                        >
+                          <item.icon className="size-4" />
+                        </motion.div>
+                        <span className="truncate">{item.label}</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
         ))}
 
-        {/* Divider */}
-        <div className="mx-3 my-2 h-px bg-[var(--sidebar-border)]" />
+        <div className="mx-4 my-2 h-px bg-sidebar-border opacity-50" />
 
-        {/* Notifications */}
-        <div className="space-y-[1px]">
-          <NavItem
-            item={{ label: 'Notifications', icon: Bell, path: ROUTES.NOTIFICATIONS }}
-            isCollapsed={isCollapsed}
-            unreadCount={unreadCount}
-          />
-        </div>
-      </nav>
+        <SidebarGroup className="px-3">
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  tooltip="Notifications"
+                  render={<NavLink to={ROUTES.NOTIFICATIONS} />}
+                  className={cn(
+                    "relative group transition-colors overflow-hidden isolate",
+                    location.pathname.startsWith(ROUTES.NOTIFICATIONS)
+                      ? "text-[var(--sidebar-active-pip,theme(colors.blue.600))] font-medium bg-transparent hover:bg-transparent"
+                      : "text-sidebar-foreground hover:bg-sidebar-accent"
+                  )}
+                >
+                  {location.pathname.startsWith(ROUTES.NOTIFICATIONS) && (
+                    <>
+                      <motion.div
+                        layoutId="active-nav-pill"
+                        className="absolute inset-0 rounded-md pointer-events-none -z-10"
+                        style={{ backgroundColor: 'var(--sidebar-active-pip, theme(colors.blue.600))', opacity: 0.12 }}
+                        transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                      />
+                      <motion.div
+                        layoutId="active-nav-pip"
+                        className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-4 bg-[var(--sidebar-active-pip,theme(colors.blue.600))] rounded-r-full pointer-events-none -z-10"
+                        transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                      />
+                    </>
+                  )}
+                  <motion.div
+                    whileHover={{ scale: 1.1, rotate: 10 }}
+                    whileTap={{ scale: 0.9 }}
+                    className="flex items-center justify-center shrink-0"
+                  >
+                    <Bell className="size-4" />
+                  </motion.div>
+                  <span className="truncate">Notifications</span>
+                  {unreadCount > 0 && (
+                    <SidebarMenuBadge className="bg-[var(--sidebar-active-pip,theme(colors.blue.600))] text-white px-1.5 py-0.5 rounded text-[10px] h-auto min-w-[18px]">
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </SidebarMenuBadge>
+                  )}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
 
-      {/* ── User + Collapse ────────────────────────────────────── */}
-      <div className="flex-shrink-0 border-t border-[var(--sidebar-border)]">
-        {/* User row */}
-        <div
-          className={cn(
-            'flex items-center gap-2.5 px-3 py-2.5',
-            isCollapsed && 'justify-center px-0 py-3',
-          )}
-        >
-          {/* Avatar — flat, no gradient */}
-          <div
-            title={user?.name}
-            className={cn(
-              'w-6 h-6 rounded-[4px] bg-[var(--sidebar-active-pip)] flex-shrink-0',
-              'flex items-center justify-center',
-              'text-[10px] font-semibold text-white leading-none',
-            )}
-          >
-            {user ? getInitials(user.name) : '?'}
-          </div>
-
-          {!isCollapsed && (
-            <>
-              <div className="flex-1 min-w-0">
-                <p className="text-[12px] font-medium text-[var(--sidebar-text-hover)] truncate leading-tight">
-                  {user?.name ?? 'User'}
-                </p>
-                <p className="text-[11px] text-[var(--sidebar-icon)] truncate leading-tight capitalize">
-                  {user?.role?.replace(/_/g, ' ')}
-                </p>
-              </div>
-              <button
-                onClick={logout}
-                title="Sign out"
-                className={cn(
-                  'p-1 rounded-[3px] flex-shrink-0 transition-colors',
-                  'text-[var(--sidebar-icon)] hover:text-[var(--sidebar-text-hover)]',
-                  'hover:bg-[var(--sidebar-item-hover)]',
-                )}
-              >
-                <LogOut size={13} strokeWidth={1.75} />
-              </button>
-            </>
-          )}
-        </div>
-
-        {/* Collapse toggle */}
-        <button
-          onClick={() => dispatch(toggleSidebar())}
-          title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          className={cn(
-            'w-full flex items-center gap-2 py-2 transition-colors',
-            'text-[11px] text-[var(--sidebar-icon)] hover:text-[var(--sidebar-text-hover)]',
-            'hover:bg-[var(--sidebar-item-hover)]',
-            'border-t border-[var(--sidebar-border)]',
-            isCollapsed ? 'justify-center px-0' : 'px-3',
-          )}
-        >
-          {isCollapsed
-            ? <PanelLeftOpen size={13} strokeWidth={1.75} />
-            : (
-              <>
-                <PanelLeftClose size={13} strokeWidth={1.75} />
-                <span>Collapse</span>
-              </>
-            )
-          }
-        </button>
-      </div>
-    </aside>
+      <SidebarFooter className="border-t border-sidebar-border p-2">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground group hover:bg-sidebar-accent transition-colors flex items-center gap-2">
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className={cn(
+                      'w-8 h-8 rounded-md bg-[var(--sidebar-active-pip,theme(colors.blue.600))] shrink-0',
+                      'flex items-center justify-center shadow-sm',
+                      'text-xs font-semibold text-white leading-none',
+                    )}
+                  >
+                    {user ? getInitials(user.name) : '?'}
+                  </motion.div>
+                  <div className="grid flex-1 text-left text-sm leading-tight transition-opacity">
+                    <span className="truncate font-medium">{user?.name ?? 'User'}</span>
+                    <span className="truncate text-xs capitalize text-muted-foreground group-hover:text-foreground transition-colors">{user?.role?.replace(/_/g, ' ')}</span>
+                  </div>
+                  <ChevronsUpDown className="ml-auto size-4 text-muted-foreground group-hover:text-foreground transition-colors shrink-0" />
+                </SidebarMenuButton>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent side={isMobile ? 'bottom' : 'right'} align="start" className="w-56" sideOffset={4}>
+                <DropdownMenuGroup>
+                  <DropdownMenuLabel className="p-0 font-normal">
+                    <div className="flex items-center gap-2 px-2 py-2 text-left text-sm">
+                      <div
+                        className={cn(
+                          'w-8 h-8 rounded-md bg-[var(--sidebar-active-pip,theme(colors.blue.600))] shrink-0',
+                          'flex items-center justify-center shadow-sm',
+                          'text-xs font-semibold text-white leading-none',
+                        )}
+                      >
+                        {user ? getInitials(user.name) : '?'}
+                      </div>
+                      <div className="grid flex-1 text-left text-sm leading-tight">
+                        <span className="truncate font-medium">{user?.name ?? 'User'}</span>
+                        <span className="truncate text-xs capitalize text-muted-foreground">{user?.role?.replace(/_/g, ' ')}</span>
+                      </div>
+                    </div>
+                  </DropdownMenuLabel>
+                </DropdownMenuGroup>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={logout} className="text-red-500 focus:text-red-500 focus:bg-red-50 dark:focus:bg-red-950/50 cursor-pointer">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Sign out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
+    </ShadcnSidebar>
   )
 }
