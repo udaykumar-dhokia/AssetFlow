@@ -11,7 +11,7 @@ app.services.xxx) since app/ is the working directory either way.
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from api.routes import chat, health
+from api.routes import chat, health, agent_routes
 
 app = FastAPI(title="AssetFlow AI Module", version="0.1.0")
 
@@ -27,3 +27,4 @@ app.add_middleware(
 
 app.include_router(health.router)
 app.include_router(chat.router)
+app.include_router(agent_routes.router)
