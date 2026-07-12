@@ -8,6 +8,7 @@ import { OrganizationModule } from './organization/organization.module';
 import { JwtMiddleware } from '../utils/jwt.middleware';
 import { AssetModule } from './asset/asset.module';
 import { AllocationModule } from './allocation/allocation.module';
+import { BookingModule } from './booking/booking.module';
 import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
@@ -18,6 +19,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     OrganizationModule,
     AssetModule,
     AllocationModule,
+    BookingModule,
     ScheduleModule.forRoot(),
   ],
   controllers: [AppController],
