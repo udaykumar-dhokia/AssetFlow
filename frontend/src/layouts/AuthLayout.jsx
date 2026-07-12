@@ -1,163 +1,101 @@
-// layouts/AuthLayout.jsx
-// Design inspired by ConnectVision — deep-navy gradient left panel, clean white right.
 
 export default function AuthLayout({ children }) {
   return (
-    <div style={{
-      display: 'flex',
-      minHeight: '100vh',
-      fontFamily: "'Inter', ui-sans-serif, system-ui, sans-serif",
-    }}>
+    <div className="min-h-screen flex font-sans">
 
-      {/* ── Left Branding Panel ───────────────────────────────── */}
-      <div style={{
-        width: '460px',
-        flexShrink: 0,
-        background: 'linear-gradient(150deg, #060918 0%, #0c1445 35%, #0e2060 65%, #081535 100%)',
-        padding: '48px 44px',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-        position: 'relative',
-        overflow: 'hidden',
-        // hide on small screens via inline media query trick — handled by JS check
-      }}>
+      {/* ── Left Branding Panel ─────────────────────── */}
+      <div
+        className="flex-1 hidden lg:flex flex-col justify-between p-12 relative overflow-hidden"
+        style={{ background: 'linear-gradient(150deg,#060918 0%,#0c1445 35%,#0e2060 65%,#081535 100%)' }}
+      >
+        {/* Glow blobs */}
+        <div className="absolute -top-20 -right-20 w-80 h-80 rounded-full pointer-events-none"
+          style={{ background: 'radial-gradient(circle,rgba(59,130,246,.18) 0%,transparent 65%)' }} />
+        <div className="absolute bottom-24 -left-10 w-60 h-60 rounded-full pointer-events-none"
+          style={{ background: 'radial-gradient(circle,rgba(37,99,235,.1) 0%,transparent 65%)' }} />
+        {/* Dot grid */}
+        <div aria-hidden className="absolute inset-0 pointer-events-none opacity-[.04]"
+          style={{ backgroundImage: 'radial-gradient(circle,#fff 1px,transparent 1px)', backgroundSize: '28px 28px' }} />
 
-        {/* Decorative glow blobs */}
-        <div style={{
-          position: 'absolute', top: '-80px', right: '-80px',
-          width: '320px', height: '320px', borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(59,130,246,0.18) 0%, transparent 65%)',
-          pointerEvents: 'none',
-        }} />
-        <div style={{
-          position: 'absolute', bottom: '100px', left: '-60px',
-          width: '240px', height: '240px', borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(37,99,235,0.1) 0%, transparent 65%)',
-          pointerEvents: 'none',
-        }} />
-        {/* Dot grid overlay */}
-        <div aria-hidden style={{
-          position: 'absolute', inset: 0, opacity: 0.04,
-          backgroundImage: 'radial-gradient(circle, #ffffff 1px, transparent 1px)',
-          backgroundSize: '28px 28px',
-          pointerEvents: 'none',
-        }} />
-
-        {/* Top: Logo + Tagline */}
-        <div style={{ position: 'relative', zIndex: 1 }}>
-          {/* Logo mark */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '52px' }}>
-            <div style={{
-              width: '38px', height: '38px', borderRadius: '9px',
-              background: 'rgba(59,130,246,0.18)',
-              border: '1px solid rgba(59,130,246,0.35)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              <svg width="16" height="16" viewBox="0 0 12 12" fill="none">
-                <rect x="1" y="1" width="4" height="4" rx="0.75" fill="white" opacity="0.95"/>
-                <rect x="7" y="1" width="4" height="4" rx="0.75" fill="white" opacity="0.65"/>
-                <rect x="1" y="7" width="4" height="4" rx="0.75" fill="white" opacity="0.65"/>
-                <rect x="7" y="7" width="4" height="4" rx="0.75" fill="white" opacity="0.3"/>
-              </svg>
-            </div>
-            <div>
-              <div style={{ color: '#fff', fontSize: '15px', fontWeight: 600, letterSpacing: '-0.01em' }}>
-                AssetFlow
+        <div className="flex-1 flex flex-col justify-center">
+          <div className="max-w-[440px] mx-auto w-full">
+            {/* Top: Logo + Tagline */}
+            <div className="relative z-10 mb-12">
+              {/* Logo */}
+              <div className="flex items-center gap-2.5 mb-10">
+                <div className="w-9 h-9 rounded-[9px] flex items-center justify-center shrink-0 bg-accent-500/20 border border-accent-500/35">
+                  <svg width="16" height="16" viewBox="0 0 12 12" fill="none">
+                    <rect x="1" y="1" width="4" height="4" rx=".75" fill="white" opacity=".95"/>
+                    <rect x="7" y="1" width="4" height="4" rx=".75" fill="white" opacity=".65"/>
+                    <rect x="1" y="7" width="4" height="4" rx=".75" fill="white" opacity=".65"/>
+                    <rect x="7" y="7" width="4" height="4" rx=".75" fill="white" opacity=".3"/>
+                  </svg>
+                </div>
+                <div>
+                  <div className="text-white text-[15px] font-semibold tracking-[-0.01em]">AssetFlow</div>
+                  <div className="text-white/30 text-[9.5px] tracking-[0.1em] uppercase mt-px">Asset Management</div>
+                </div>
               </div>
-              <div style={{
-                color: 'rgba(255,255,255,0.3)', fontSize: '9.5px',
-                letterSpacing: '0.1em', textTransform: 'uppercase', marginTop: '1px',
-              }}>
-                Asset Management
+
+              {/* Copy */}
+              <p className="text-white/38 text-[12.5px] mb-2.5 tracking-[0.01em]">Built for modern enterprises</p>
+              <h2 className="text-white text-[38px] font-bold leading-[1.15] tracking-[-0.025em] mb-5">
+                Manage your assets<br />
+                <span className="text-blue-400">with precision.</span>
+              </h2>
+              <p className="text-white/42 text-[15px] leading-[1.65] max-w-[360px]">
+                Track, allocate, and manage your organization's assets across
+                departments and locations. Fast, secure, and easy to use.
+              </p>
+            </div>
+
+            {/* Feature pills */}
+            <div className="relative z-10">
+              <div className="flex flex-wrap gap-3">
+                {[
+                  'Asset lifecycle tracking',
+                  'Role-based access control',
+                  'Maintenance & audit',
+                ].map((f) => (
+                  <div key={f} className="flex items-center gap-2.5 px-3.5 py-2 rounded-[7px] bg-white/[.035] border border-white/[.06]">
+                    <div className="w-[5px] h-[5px] rounded-full bg-blue-500 shrink-0" />
+                    <span className="text-white/48 text-[12.5px]">{f}</span>
+                  </div>
+                ))}
               </div>
             </div>
-          </div>
-
-          {/* Main copy */}
-          <div>
-            <p style={{ color: 'rgba(255,255,255,0.38)', fontSize: '12.5px', marginBottom: '10px', letterSpacing: '0.01em' }}>
-              Built for modern enterprises
-            </p>
-            <h2 style={{
-              color: '#ffffff',
-              fontSize: '30px',
-              fontWeight: 700,
-              lineHeight: 1.22,
-              letterSpacing: '-0.025em',
-              marginBottom: '20px',
-            }}>
-              Manage your assets<br />
-              <span style={{ color: '#60a5fa' }}>with precision.</span>
-            </h2>
-            <p style={{
-              color: 'rgba(255,255,255,0.42)',
-              fontSize: '13.5px',
-              lineHeight: 1.75,
-              maxWidth: '340px',
-            }}>
-              Track, allocate, and manage your organization's assets across
-              departments and locations. Fast, secure, and easy to use.
-            </p>
           </div>
         </div>
 
-        {/* Bottom: Features + Copyright */}
-        <div style={{ position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '7px', marginBottom: '28px' }}>
-            {[
-              { icon: '⬡', label: 'Asset lifecycle tracking' },
-              { icon: '⬡', label: 'Role-based access control' },
-              { icon: '⬡', label: 'Maintenance & audit workflows' },
-              { icon: '⬡', label: 'Real-time notifications' },
-            ].map(({ icon, label }) => (
-              <div key={label} style={{
-                display: 'flex', alignItems: 'center', gap: '10px',
-                padding: '9px 14px',
-                borderRadius: '7px',
-                background: 'rgba(255,255,255,0.035)',
-                border: '1px solid rgba(255,255,255,0.06)',
-              }}>
-                <div style={{
-                  width: '5px', height: '5px', borderRadius: '50%',
-                  background: '#3b82f6', flexShrink: 0,
-                }} />
-                <span style={{ color: 'rgba(255,255,255,0.48)', fontSize: '12.5px' }}>
-                  {label}
-                </span>
-              </div>
-            ))}
-          </div>
-          <div style={{
-            borderTop: '1px solid rgba(255,255,255,0.07)',
-            paddingTop: '18px',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}>
-            <span style={{ color: 'rgba(255,255,255,0.18)', fontSize: '10.5px', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-              AssetFlow v1.0
-            </span>
-            <span style={{ color: 'rgba(255,255,255,0.18)', fontSize: '10.5px' }}>
-              © 2026
-            </span>
+        {/* Bottom: copyright */}
+        <div className="relative z-10 w-full max-w-[440px] mx-auto pb-4">
+          <div className="flex justify-between items-center border-t border-white/[.07] pt-5">
+            <span className="text-white/18 text-[10.5px] uppercase tracking-[0.05em]">AssetFlow v1.0</span>
+            <span className="text-white/18 text-[10.5px]">© 2026</span>
           </div>
         </div>
       </div>
 
-      {/* ── Right Form Panel ──────────────────────────────────── */}
-      <div style={{
-        flex: 1,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: '#ffffff',
-        padding: '48px 32px',
-      }}>
-        <div style={{ width: '100%', maxWidth: '420px' }}>
+      {/* ── Right Form Panel ────────────────────────── */}
+      <div className="w-full lg:w-[620px] shrink-0 flex items-center justify-center bg-white px-8 py-12 relative">
+        {/* Mobile logo */}
+        <div className="absolute top-6 left-6 flex items-center gap-2 lg:hidden">
+          <div className="w-7 h-7 rounded-[6px] flex items-center justify-center bg-accent-500">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <rect x="1" y="1" width="4" height="4" rx=".75" fill="white" opacity=".95"/>
+              <rect x="7" y="1" width="4" height="4" rx=".75" fill="white" opacity=".65"/>
+              <rect x="1" y="7" width="4" height="4" rx=".75" fill="white" opacity=".65"/>
+              <rect x="7" y="7" width="4" height="4" rx=".75" fill="white" opacity=".3"/>
+            </svg>
+          </div>
+          <span className="text-[14px] font-semibold text-text-primary tracking-[-0.01em]">AssetFlow</span>
+        </div>
+
+        <div className="w-full max-w-[400px]">
           {children}
         </div>
       </div>
+
     </div>
   )
 }

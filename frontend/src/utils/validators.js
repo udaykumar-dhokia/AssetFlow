@@ -1,11 +1,9 @@
 // utils/validators.js
-// Shared Zod schemas for reuse across multiple forms.
-// Import specific schemas in feature-level form schemas.
+// Shared Zod schemas — import per form.
 
 import { z } from 'zod'
 
 // ── Primitives ───────────────────────────────────────────────
-
 export const requiredString = z.string().min(1, 'This field is required')
 
 export const email = z
@@ -17,6 +15,11 @@ export const password = z
   .string()
   .min(8, 'Password must be at least 8 characters')
   .max(128, 'Password is too long')
+
+export const otp = z
+  .string()
+  .length(6, 'OTP must be exactly 6 digits')
+  .regex(/^\d{6}$/, 'OTP must contain only digits')
 
 export const phoneNumber = z
   .string()
@@ -30,6 +33,13 @@ export const positiveNumber = z
 
 export const optionalString = z.string().optional().or(z.literal(''))
 
+// ── Role enum ────────────────────────────────────────────────
+export const ROLES = ['ADMIN', 'ASSET_MANAGER', 'DEPT_HEAD', 'EMPLOYEE']
+
+export const roleEnum = z.enum(ROLES, {
+  errorMap: () => ({ message: 'Please select a valid role' }),
+})
+
 // ── Auth Schemas ─────────────────────────────────────────────
 
 export const loginSchema = z.object({
@@ -37,28 +47,33 @@ export const loginSchema = z.object({
   password: z.string().min(1, 'Password is required'),
 })
 
+export const loginOtpRequestSchema = z.object({ email })
+
+export const loginOtpVerifySchema = z.object({ email, otp })
+
 export const registerSchema = z
   .object({
-    name:             requiredString,
+    name:            requiredString,
     email,
     password,
-    confirmPassword:  z.string().min(1, 'Please confirm your password'),
+    confirmPassword: z.string().min(1, 'Please confirm your password'),
   })
-  .refine((data) => data.password === data.confirmPassword, {
+  .refine((d) => d.password === d.confirmPassword, {
     message: 'Passwords do not match',
     path: ['confirmPassword'],
   })
 
-export const forgotPasswordSchema = z.object({
-  email,
-})
+export const verifyEmailSchema = z.object({ email, otp })
+
+export const forgotPasswordSchema = z.object({ email })
 
 export const resetPasswordSchema = z
   .object({
-    password,
+    otp,
+    newPassword:     password,
     confirmPassword: z.string().min(1, 'Please confirm your password'),
   })
-  .refine((data) => data.password === data.confirmPassword, {
+  .refine((d) => d.newPassword === d.confirmPassword, {
     message: 'Passwords do not match',
     path: ['confirmPassword'],
   })

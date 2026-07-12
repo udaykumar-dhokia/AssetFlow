@@ -54,10 +54,13 @@ api.interceptors.response.use(
     const { status, data } = response
 
     switch (status) {
-      case 401:
-        // Unauthorized — token expired or invalid, force logout
-        store.dispatch(logout())
+      case 401: {
+        // Only force logout if a token exists (session expired).
+        // A 401 on login itself (wrong password) should NOT trigger logout.
+        const hasToken = !!store.getState().auth?.token
+        if (hasToken) store.dispatch(logout())
         return Promise.reject(new Error(data?.message ?? 'Session expired. Please log in again.'))
+      }
 
       case 403:
         return Promise.reject(new Error(data?.message ?? 'You do not have permission to perform this action.'))

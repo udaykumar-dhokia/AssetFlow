@@ -1,128 +1,129 @@
 // pages/auth/RegisterPage.jsx
-// Design: same clean language as LoginPage.
+// Signup: name, email, password, role → POST /auth/signup → redirect to /verify-email
 
-import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, useNavigate } from 'react-router-dom'
-import { Eye, EyeOff, Loader2 } from 'lucide-react'
+import { useMutation } from '@tanstack/react-query'
+import { User, Mail, Lock, Loader2, ArrowRight, ChevronDown } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { registerSchema } from '@/utils/validators'
 import { ROUTES } from '@/constants/routes'
 import { cn } from '@/lib/utils'
+import authService from '@/services/authService'
+import FormInputField from '@/components/common/FormInputField'
 
-const inputBase = cn(
-  'w-full h-8 px-3 text-[13px] rounded-[5px]',
-  'border transition-colors duration-100',
-  'bg-[var(--bg-canvas)] text-[var(--text-primary)]',
-  'placeholder:text-[var(--text-disabled)]',
-  'focus:outline-none focus:border-[var(--border-accent)]',
-  'focus:ring-2 focus:ring-[var(--ring-accent)]',
+const inputWrap = (err) => cn(
+  'flex items-center gap-2.5 h-11 px-4 rounded-input border transition-colors',
+  'bg-bg-subtle focus-within:bg-bg-canvas',
+  err
+    ? 'border-border-danger focus-within:ring-2 focus-within:ring-danger-600/15'
+    : 'border-border-default focus-within:border-border-accent focus-within:ring-2 focus-within:ring-accent-500/10'
 )
+const inputCls = 'flex-1 bg-transparent border-none outline-none text-sm text-text-primary placeholder:text-text-disabled font-sans'
+const labelCls = 'block text-xs font-medium text-text-secondary mb-1.5'
+const errorCls = 'mt-1 text-xs text-danger-600'
 
-const labelClass = 'block text-[12.5px] font-medium'
+
 
 export default function RegisterPage() {
-  const navigate = useNavigate()
-  const [showPw, setShowPw] = useState(false)
+  const navigate  = useNavigate()
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm({
+  const { control, register, handleSubmit, formState: { errors } } = useForm({
     resolver: zodResolver(registerSchema),
     defaultValues: { name: '', email: '', password: '', confirmPassword: '' },
   })
 
-  const onSubmit = async () => {
-    try {
-      await new Promise((r) => setTimeout(r, 700))
-      toast.success('Account created. Please sign in.')
-      navigate(ROUTES.LOGIN)
-    } catch (err) {
-      toast.error(err.message || 'Registration failed')
+  const { mutate: signupMutation, isPending: isSignupPending } = useMutation({
+    mutationFn: authService.signup,
+    onSuccess: (res, data) => {
+      toast.success(res.message || 'Account created! Check your email for OTP.')
+      navigate(ROUTES.VERIFY_EMAIL, { state: { email: data.email } })
+    },
+    onError: (err) => {
+      const msg = err.response?.data?.message || err.message || 'Registration failed'
+      if (err.response?.status === 409) {
+        toast.error('This email is already registered.')
+      } else {
+        toast.error(msg)
+      }
     }
+  })
+
+  const onSubmit = (data) => {
+    const { confirmPassword, ...payload } = data
+    signupMutation({ ...payload, role: 'EMPLOYEE' })
   }
 
-  const fieldError = (key) =>
-    errors[key] ? 'border-[var(--border-danger)] focus:ring-[var(--ring-danger)]' : 'border-[var(--border-default)]'
-
   return (
-    <div className="space-y-5">
-      <div>
-        <h1 className="text-[18px] font-semibold tracking-[-0.02em]" style={{ color: 'var(--text-primary)' }}>
-          Create account
+    <div>
+      <div className="mb-9">
+        <h1 className="text-[28px] font-bold text-text-primary tracking-[-0.025em] leading-[1.2] mb-2">
+          Create your account
         </h1>
-        <p className="mt-1 text-[13px]" style={{ color: 'var(--text-tertiary)' }}>
-          Employee account — admin roles assigned later
+        <p className="text-sm text-text-tertiary">
+          Join AssetFlow — verify your email after signup.
         </p>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-3.5" noValidate>
-        {/* Name */}
-        <div className="space-y-1.5">
-          <label htmlFor="reg-name" className={labelClass} style={{ color: 'var(--text-secondary)' }}>Full name</label>
-          <input id="reg-name" type="text" autoComplete="name" placeholder="Priya Shah"
-            {...register('name')}
-            className={cn(inputBase, fieldError('name'))}
-          />
-          {errors.name && <p className="text-[11.5px]" style={{ color: 'var(--color-danger-600)' }}>{errors.name.message}</p>}
-        </div>
+      <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
+        {/* Full Name */}
+        <FormInputField
+          name="name"
+          control={control}
+          label="Full name"
+          placeholder="Enter full name"
+          errors={errors}
+          icon={<User size={15} />}
+        />
 
         {/* Email */}
-        <div className="space-y-1.5">
-          <label htmlFor="reg-email" className={labelClass} style={{ color: 'var(--text-secondary)' }}>Work email</label>
-          <input id="reg-email" type="email" autoComplete="email" placeholder="name@company.com"
-            {...register('email')}
-            className={cn(inputBase, fieldError('email'))}
-          />
-          {errors.email && <p className="text-[11.5px]" style={{ color: 'var(--color-danger-600)' }}>{errors.email.message}</p>}
-        </div>
+        <FormInputField
+          name="email"
+          control={control}
+          label="Work email"
+          type="email"
+          placeholder="Enter email"
+          errors={errors}
+          icon={<Mail size={15} />}
+        />
+
+
 
         {/* Password */}
-        <div className="space-y-1.5">
-          <label htmlFor="reg-password" className={labelClass} style={{ color: 'var(--text-secondary)' }}>Password</label>
-          <div className="relative">
-            <input id="reg-password" type={showPw ? 'text' : 'password'} autoComplete="new-password" placeholder="Min. 8 characters"
-              {...register('password')}
-              className={cn(inputBase, 'pr-9', fieldError('password'))}
-            />
-            <button type="button" tabIndex={-1} onClick={() => setShowPw(p => !p)}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 transition-colors"
-              style={{ color: 'var(--text-disabled)' }}
-            >
-              {showPw ? <EyeOff size={13} /> : <Eye size={13} />}
-            </button>
-          </div>
-          {errors.password && <p className="text-[11.5px]" style={{ color: 'var(--color-danger-600)' }}>{errors.password.message}</p>}
-        </div>
+        <FormInputField
+          name="password"
+          control={control}
+          label="Password"
+          type="password"
+          placeholder="Enter password"
+          errors={errors}
+          icon={<Lock size={15} />}
+        />
 
-        {/* Confirm */}
-        <div className="space-y-1.5">
-          <label htmlFor="reg-confirm" className={labelClass} style={{ color: 'var(--text-secondary)' }}>Confirm password</label>
-          <input id="reg-confirm" type="password" autoComplete="new-password" placeholder="Re-enter password"
-            {...register('confirmPassword')}
-            className={cn(inputBase, fieldError('confirmPassword'))}
-          />
-          {errors.confirmPassword && <p className="text-[11.5px]" style={{ color: 'var(--color-danger-600)' }}>{errors.confirmPassword.message}</p>}
-        </div>
+        {/* Confirm Password */}
+        <FormInputField
+          name="confirmPassword"
+          control={control}
+          label="Confirm password"
+          type="password"
+          placeholder="Confirm password"
+          errors={errors}
+          icon={<Lock size={15} />}
+        />
 
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="w-full h-8 flex items-center justify-center gap-1.5 rounded-[5px] text-[13px] font-medium text-white transition-opacity disabled:opacity-60 disabled:cursor-not-allowed"
-          style={{ background: '#1d4ed8' }}
-        >
-          {isSubmitting && <Loader2 size={13} className="animate-spin" />}
-          {isSubmitting ? 'Creating...' : 'Create account'}
+        <button id="reg-submit" type="submit" disabled={isSignupPending}
+          className="w-full h-11 mt-2 flex items-center justify-center gap-2 rounded-btn bg-accent-500 hover:bg-accent-600 disabled:bg-accent-500/60 text-white text-sm font-semibold tracking-[-0.01em] transition-colors cursor-pointer disabled:cursor-not-allowed">
+          {isSignupPending
+            ? <><Loader2 size={14} className="animate-spin" /> Creating account...</>
+            : <>Create Account <ArrowRight size={14} /></>}
         </button>
       </form>
 
-      <p className="text-center text-[12.5px]" style={{ color: 'var(--text-tertiary)' }}>
+      <p className="text-center text-[13px] text-text-tertiary mt-7">
         Already have an account?{' '}
-        <Link to={ROUTES.LOGIN} className="font-medium" style={{ color: 'var(--text-link)' }}>Sign in</Link>
+        <Link to={ROUTES.LOGIN} className="text-accent-500 font-semibold hover:text-accent-600">Sign in</Link>
       </p>
     </div>
   )
