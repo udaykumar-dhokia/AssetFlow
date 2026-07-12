@@ -3,10 +3,10 @@
 // Used in RoleGuard, usePermissions, and Sidebar nav filtering.
 
 export const ROLES = {
-  ADMIN:            'admin',
-  ASSET_MANAGER:    'asset_manager',
-  DEPARTMENT_HEAD:  'department_head',
-  EMPLOYEE:         'employee',
+  ADMIN:            'ADMIN',
+  ASSET_MANAGER:    'ASSET_MANAGER',
+  DEPARTMENT_HEAD:  'DEPARTMENT_HEAD',
+  EMPLOYEE:         'EMPLOYEE',
 }
 
 // Role display labels

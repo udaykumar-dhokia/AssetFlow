@@ -3,6 +3,7 @@
 // Provides a clean API for components and routes to access auth data.
 
 import { useSelector, useDispatch } from 'react-redux'
+import { ROLES } from '@/constants/roles'
 import {
   selectToken,
   selectUser,
@@ -48,9 +49,9 @@ export function useAuth() {
     isAuthLoading,
     logout,
     // Role shorthand flags
-    isAdmin:          role === 'admin',
-    isAssetManager:   role === 'asset_manager',
-    isDepartmentHead: role === 'department_head',
-    isEmployee:       role === 'employee',
+    isAdmin:          role === ROLES.ADMIN,
+    isAssetManager:   role === ROLES.ASSET_MANAGER,
+    isDepartmentHead: role === ROLES.DEPARTMENT_HEAD,
+    isEmployee:       role === ROLES.EMPLOYEE,
   }
 }

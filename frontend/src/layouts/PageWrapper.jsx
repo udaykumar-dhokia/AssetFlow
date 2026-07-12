@@ -4,12 +4,7 @@
 
 import { cn } from '@/lib/utils'
 
-/**
- * @param {object} props
- * @param {React.ReactNode} props.children
- * @param {string} [props.className] - Additional classes
- * @param {boolean} [props.fullWidth] - Skip max-width constraint
- */
+
 export default function PageWrapper({ children, className, fullWidth = false }) {
   return (
     <div

@@ -34,9 +34,17 @@ export default function AppInitializer({ children }) {
         // dispatch(setUser(user))
         // ────────────────────────────────────────────────────────────
 
-        // Temporary: trust the existing token, mark initialized.
-        // setUser is not called here intentionally — user data will come
-        // from the /me endpoint. For now, setInitialized unblocks the UI.
+        // Temporary: Decode token to get user info until /me is ready
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]))
+          dispatch(setUser({ 
+            id: payload.sub, 
+            role: payload.role, 
+            name: 'User' // Default fallback since name isn't in token
+          }))
+        } catch (e) {
+          console.error('Failed to decode token on init')
+        }
         dispatch(setInitialized())
       } catch {
         // Token invalid or expired — force logout
