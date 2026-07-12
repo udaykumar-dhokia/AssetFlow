@@ -6,9 +6,20 @@ import { AuthModule } from './auth/auth.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { OrganizationModule } from './organization/organization.module';
 import { JwtMiddleware } from '../utils/jwt.middleware';
+import { AssetModule } from './asset/asset.module';
+import { AllocationModule } from './allocation/allocation.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
-  imports: [SharedModule, AuthModule, DashboardModule, OrganizationModule],
+  imports: [
+    SharedModule,
+    AuthModule,
+    DashboardModule,
+    OrganizationModule,
+    AssetModule,
+    AllocationModule,
+    ScheduleModule.forRoot(),
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
