@@ -11,6 +11,7 @@ import { AllocationModule } from './allocation/allocation.module';
 import { BookingModule } from './booking/booking.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { MaintenanceModule } from './maintenance/maintenance.module';
+import { AuditModule } from './audit/audit.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { MaintenanceModule } from './maintenance/maintenance.module';
     BookingModule,
     ScheduleModule.forRoot(),
     MaintenanceModule,
+    AuditModule,
   ],
   controllers: [AppController],
   providers: [AppService],
