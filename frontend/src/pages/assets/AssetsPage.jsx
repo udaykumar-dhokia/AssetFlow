@@ -16,11 +16,8 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useAssets } from '@/hooks/useAssets'
-import { useRequestTransfer } from '@/hooks/useAllocations'
 import { format } from 'date-fns'
 import RegisterAssetModal from './components/RegisterAssetModal'
-import AllocateAssetModal from './components/AllocateAssetModal'
-import ReturnAssetModal from './components/ReturnAssetModal'
 
 const STATUS_COLORS = {
   AVAILABLE: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
@@ -35,12 +32,7 @@ export default function AssetsPage() {
   const [globalFilter, setGlobalFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState('ALL')
   const [isRegisterOpen, setIsRegisterOpen] = useState(false)
-  const [isAllocateOpen, setIsAllocateOpen] = useState(false)
-  const [isReturnOpen, setIsReturnOpen] = useState(false)
   const [selectedAssetId, setSelectedAssetId] = useState(null)
-  const [selectedAllocationId, setSelectedAllocationId] = useState(null)
-
-  const { mutate: requestTransfer } = useRequestTransfer()
 
   // Fetch data
   const { data: response, isLoading } = useAssets({
@@ -94,10 +86,11 @@ export default function AssetsPage() {
         const asset = row.original
         return (
           <DropdownMenu>
-            <DropdownMenuTrigger render={<Button variant="ghost" className="h-8 w-8 p-0">
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
                 <span className="sr-only">Open menu</span>
                 <MoreHorizontal className="h-4 w-4" />
-              </Button>}>
+              </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuGroup>
@@ -109,39 +102,15 @@ export default function AssetsPage() {
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
                 <Link to={`/assets/${asset.id}`} className="cursor-pointer">
-                  <Eye className="mr-2 h-4 w-4" /> View Details
+                  View Details
                 </Link>
               </DropdownMenuItem>
-              
-              {asset.status === 'AVAILABLE' && (
-                <DropdownMenuItem onClick={() => {
-                  setSelectedAssetId(asset.id)
-                  setIsAllocateOpen(true)
-                }}>
-                  Allocate Asset
-                </DropdownMenuItem>
-              )}
-
-              {asset.status === 'ALLOCATED' && (
-                <>
-                  <DropdownMenuItem onClick={() => requestTransfer(asset.id)}>
-                    Request Transfer
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => {
-                    const activeAllocId = asset.activeAllocation?.id || asset.activeAllocationId || 'demo-alloc-id'
-                    setSelectedAllocationId(activeAllocId)
-                    setIsReturnOpen(true)
-                  }}>
-                    Return Asset
-                  </DropdownMenuItem>
-                </>
-              )}
             </DropdownMenuContent>
           </DropdownMenu>
         )
       },
     },
-  ], [requestTransfer])
+  ], [])
 
   return (
     <PageWrapper>
@@ -193,12 +162,6 @@ export default function AssetsPage() {
       </div>
 
       <RegisterAssetModal open={isRegisterOpen} onOpenChange={setIsRegisterOpen} />
-      {selectedAssetId && (
-        <AllocateAssetModal open={isAllocateOpen} onOpenChange={setIsAllocateOpen} assetId={selectedAssetId} />
-      )}
-      {selectedAllocationId && (
-        <ReturnAssetModal open={isReturnOpen} onOpenChange={setIsReturnOpen} allocationId={selectedAllocationId} />
-      )}
     </PageWrapper>
   )
 }
